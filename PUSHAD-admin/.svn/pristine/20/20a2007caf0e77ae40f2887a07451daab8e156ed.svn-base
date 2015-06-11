@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="mediaStatistics">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="mediaListResult" class="statistics_vo" />
+	
+	<!-- Q U E R I E S -->
+	<select id="selectList" parameterClass="array" resultMap="mediaListResult">
+		SELECT 
+			PC.NAME AS media_category_nm, 
+			PC.ATT AS media_category_cd,
+			IFNULL(A.request_cnt, 0) AS request_cnt, 
+			IFNULL(A.success_cnt, 0) AS success_cnt,
+			IFNULL(A.click_cnt, 0) AS click_cnt,
+			IFNULL(ROUND(A.success_cnt / A.request_cnt * 100, 2), 0) AS success_rate,
+			IFNULL(ROUND(A.click_cnt / A.success_cnt * 100, 2), 0) AS click_rate
+		FROM 
+			tad3.poc_code PC
+		LEFT JOIN (
+			SELECT 
+				PRM.report_dt AS start_dt,
+				PRM.media_id,
+				SUM(PRM.request_cnt) AS request_cnt, 
+				SUM(PRM.success_cnt) AS success_cnt,
+				SUM(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) AS click_cnt,
+				PRM.media_category_cd 
+			FROM 
+				ps_rpt_media PRM
+			JOIN 
+				ps_svc_media PSM ON PSM.media_id = PRM.media_id
+			<dynamic prepend="WHERE">
+				<isNotEmpty property="search_start_dt" prepend="AND">
+					PRM.report_dt >= #search_start_dt#
+				</isNotEmpty>
+				<isNotEmpty property="search_end_dt" prepend="AND">
+					#search_end_dt# >= PRM.report_dt
+				</isNotEmpty>
+			</dynamic>
+			GROUP BY media_category_cd) A 
+		ON 
+			A.media_category_cd = PC.att
+		WHERE 
+			PC.ENT = #media_category_ent# 
+		ORDER BY 
+			PC.bit_att
+	</select>
+	
+	<select id="countMediaList" parameterClass="array" resultMap="">
+		SELECT 
+			COUNT(*)
+		FROM 
+			(SELECT 
+				PRM.report_dt AS start_dt,
+				PRM.media_id,
+				PSM.media_nm,
+				SUM(PRM.request_cnt) AS request_cnt, 
+				SUM(PRM.success_cnt) AS success_cnt,
+				ROUND(SUM(PRM.success_cnt)/SUM(PRM.request_cnt) * 100, 2) AS success_rate,
+				SUM((PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT)) AS click_cnt,
+				ROUND(SUM((PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT)) / SUM(PRM.success_cnt) *100, 2) AS click_rate,
+				PRM.media_category_cd,
+				PC.name AS media_category_nm
+			FROM 
+				ps_rpt_media PRM
+			JOIN 
+				ps_svc_media PSM ON PSM.media_id = PRM.media_id
+			JOIN 
+				tad3.poc_code PC ON PC.att = PRM.media_category_cd
+			<dynamic prepend="WHERE">
+				<isNotEmpty property="search_start_dt" prepend="AND">
+					PRM.report_dt >= #search_start_dt#
+				</isNotEmpty>
+				<isNotEmpty property="search_end_dt" prepend="AND">
+					#search_end_dt# >= PRM.report_dt
+				</isNotEmpty>
+				<isNotEmpty property="media_category_cd" prepend="AND">
+					PRM.media_category_cd = #media_category_cd#
+				</isNotEmpty>
+			</dynamic>
+			GROUP BY media_id) A
+	</select>
+	
+	<select id="selectMediaList" parameterClass="array" resultMap="mediaListResult">
+		SELECT 
+			PRM.report_dt AS start_dt,
+			PRM.media_id,
+			PSM.media_nm,
+			SUM(PRM.request_cnt) AS request_cnt, 
+			SUM(PRM.success_cnt) AS success_cnt,
+			ROUND(SUM(PRM.success_cnt)/SUM(PRM.request_cnt) * 100, 2) AS success_rate,
+			SUM((PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT)) AS click_cnt,
+			ROUND(SUM((PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT)) / SUM(PRM.success_cnt) *100, 2) AS click_rate,
+			PRM.media_category_cd,
+			PC.name AS media_category_nm
+		FROM 
+			ps_rpt_media PRM
+		JOIN 
+			ps_svc_media PSM ON PSM.media_id = PRM.media_id
+		JOIN 
+			tad3.poc_code PC ON PC.att = PRM.media_category_cd
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="search_start_dt" prepend="AND">
+					PRM.report_dt >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= PRM.report_dt
+			</isNotEmpty>
+			<isNotEmpty property="media_category_cd" prepend="AND">
+				PRM.media_category_cd = #media_category_cd#
+			</isNotEmpty>
+		</dynamic>
+		GROUP BY media_id
+		ORDER BY media_nm
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+</sqlMap>

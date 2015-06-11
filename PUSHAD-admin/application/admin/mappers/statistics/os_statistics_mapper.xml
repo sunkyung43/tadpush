@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="osStatistics">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="osStatisticsResult" class="statistics_vo" />
+	
+	<!-- Q U E R I E S -->
+	<select id="selectList" parameterClass="array" resultMap="osStatisticsResult">
+		SELECT
+			PRO.report_dt AS start_dt,
+			(SELECT name FROM tad3.poc_code WHERE ent = 'OS' AND value1 = PRO.os_cd)AS os_nm, 
+			SUBSTRING_INDEX(PRO.os_ver, '.', 2) AS os_ver_nm,
+			SUM(PRO.request_cnt) AS request_cnt,
+			SUM(PRO.success_cnt) AS success_cnt,
+			SUM(PRO.web_click_cnt + PRO.and_run_click_cnt + PRO.ios_run_click_cnt + PRO.tst_dl_click_cnt + PRO.mar_dl_click_cnt + PRO.itu_dl_click_cnt + PRO.alt_click_cnt) AS click_cnt,
+			IFNULL(ROUND(SUM(PRO.success_cnt) / SUM(PRO.request_cnt) * 100,2),0) AS success_rate,
+			IFNULL(ROUND(SUM(PRO.web_click_cnt + PRO.and_run_click_cnt + PRO.ios_run_click_cnt + PRO.tst_dl_click_cnt + PRO.mar_dl_click_cnt + PRO.itu_dl_click_cnt + PRO.alt_click_cnt) / SUM(PRO.success_cnt) * 100,2),0) AS click_rate
+		FROM 
+			ps_rpt_os PRO
+		<dynamic prepend="WHERE">
+ 			<isNotEmpty property="os_cd" prepend="AND">
+ 				PRO.os_cd = #os_cd#
+ 			</isNotEmpty>
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				PRO.report_dt >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= PRO.report_dt
+			</isNotEmpty>
+		</dynamic>
+		GROUP BY os_ver_nm
+	</select>
+</sqlMap>

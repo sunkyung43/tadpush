@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="provision">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="provisionResult" class="" />
+
+	<resultMap id="provisionListResult" class="" />
+	
+	<resultMap id="provisionDetailResult" class="" />
+	
+	<!-- Q U E R I E S -->
+
+	<select id="selectProvision" parameterClass="array" resultMap="provisionResult">
+		select
+			PROVISION_SQ,
+			PROVISION_VER,
+			DATE_FORMAT(CREATE_DT, '%Y-%m-%d') as CREATE_DT,
+			PERSON_OFFER_CONTENT,
+			PERSON_GATHER_CONTENT,
+			LOCATION_CATHER_CONTENT,
+			AD_RECEIVE_CONTENT,
+			POLICY_CONTENT,
+			PROVISION_STATUS_CD
+		from
+			PS_SVC_PROVISION
+		where
+			PROVISION_STATUS_CD = #pro_status_cd#	
+		order by
+			PROVISION_SQ desc	
+		limit 1;
+	</select>
+
+	<select id="selectProvisionList" parameterClass="" resultMap="provisionListResult">
+		select 
+		    PSP.PROVISION_SQ,
+		    PSP.PROVISION_VER,
+		    PSP.PROVISION_STATUS_CD,
+		    PSP.CREATE_DT,
+		    PSP.PROVISION_STATUS_NM,
+		    sum(PSP.TERMS_YY) as TERMS_YY,
+		    sum(PSP.TERMS_YN) as TERMS_YN
+		from
+		    (select 
+				PSP.PROVISION_SQ,
+				PSP.PROVISION_VER,
+				PSP.PROVISION_STATUS_CD,
+				PSP.CREATE_DT,
+		        PC.NAME as PROVISION_STATUS_NM,
+				case
+					when PSPH.TERMS_BIT >= '1' and '15' > PSPH.TERMS_BIT then 'YN'
+					when PSPH.TERMS_BIT >= '15' then 'YY'
+				end as TERMS_CD,
+				if(PSPH.TERMS_BIT >= '15', count(PSPH.TERMS_BIT), 0) as TERMS_YY,
+				if(PSPH.TERMS_BIT >= '1' and '15' > PSPH.TERMS_BIT, count(PSPH.TERMS_BIT), 0) as TERMS_YN
+		    from
+		        PS_SVC_PROVISION PSP
+		    left join 
+				PS_SVC_PROVISION_HISTORY PSPH on PSP.PROVISION_VER = PSPH.PROVISION_VER and PSPH.TERMS_BIT >= '1'
+		    join 
+				TAD3.POC_CODE PC on PSP.PROVISION_STATUS_CD = PC.ATT
+		    group by 
+				PSP.PROVISION_SQ , TERMS_CD) PSP
+		group by PSP.PROVISION_SQ
+		order by PSP.CREATE_DT desc;
+	</select>
+	
+	<select id="selectExistVer" parameterClass="array" resultMap="">
+		SELECT 
+			COUNT(*) 
+		FROM 
+			ps_svc_provision 
+		WHERE 
+			provision_ver = #provision_ver#
+	</select>
+	
+	<update id="updateProvisionStatus" parameterClass="array">
+		UPDATE 
+			ps_svc_provision
+		SET 
+			PROVISION_STATUS_CD = #provision_status_cd#,
+			update_dt = now()
+	</update>
+
+
+
+	<insert id="insertProvisionInfo" parameterClass="array">
+		INSERT INTO 
+			ps_svc_provision 
+				(provision_ver, 
+					person_offer_content, 
+					person_gather_content, 
+					location_cather_content, 
+					ad_receive_content, 
+					policy_content, 
+					provision_status_cd, 
+					create_dt, 
+					update_dt
+				) 
+		VALUES 
+			(#provision_ver#,
+				#person_offer_content#,
+				#person_gather_content#,
+				#location_cather_content#,
+				#ad_receive_content#,
+				#policy_content#,
+				#provision_status_cd#,
+				now(),
+				now()
+			)
+	</insert>
+	
+	<select id="selectProvisionDetailInfo" parameterClass="array" resultMap="provisionDetailResult">
+		SELECT 
+			provision_sq,
+			provision_ver,
+			person_offer_content, 
+			person_gather_content, 
+			location_cather_content, 
+			ad_receive_content, 
+			policy_content, 
+			create_dt
+		FROM 
+			ps_svc_provision
+		WHERE
+			provision_sq = #provision_sq#	
+	</select>
+</sqlMap>

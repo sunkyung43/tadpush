@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="advert">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="advertResult" class="advert_vo" />
+	
+	<resultMap id="targetResult" class="" />
+	
+	<!-- Q U E R I E S -->
+
+	<insert id="insertAdvert" parameterClass="advert_vo">
+		insert into PS_SVC_AD 
+			(`CAMPAIGN_SQ`, 
+			`AD_NM`,
+			`PUSH_BOOKING_CNT`,
+			`START_DT`,
+			`AD_STATUS_CD`,
+			`SCH_STATUS_CD`,
+			`CREATE_DT`,
+			`UPDATE_DT`,
+			`CREATE_ACCOUNT_SQ`,
+			`UPDATE_ACCOUNT_SQ`)
+		values
+			(#campaign_sq#,
+			#ad_nm#,
+			#push_booking_cnt#,
+			#start_dt#,
+			#ad_status_cd#,
+			#sch_status_cd#,
+			now(),
+			now(),
+			#create_account_sq#,
+			#update_account_sq#)
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+	
+	<update id="updateAdvert" parameterClass="advert_vo">
+		update PS_SVC_AD
+		set
+			<isNotEmpty property="creative_type_cd">
+				creative_type_cd = #creative_type_cd#,
+			</isNotEmpty>
+			<isNotEmpty property="creative_sq">
+				creative_sq = #creative_sq#,
+			</isNotEmpty>
+			<isNotEmpty property="ad_nm">
+				ad_nm = #ad_nm#,
+			</isNotEmpty>
+			<isNotEmpty property="ad_status_cd">
+				ad_status_cd = #ad_status_cd#,
+			</isNotEmpty>
+			<isNotEmpty property="sch_status_cd">
+				sch_status_cd = #sch_status_cd#,
+			</isNotEmpty>
+			<isNotEmpty property="start_dt">
+				start_dt = #start_dt#,
+			</isNotEmpty>
+			<isNotEmpty property="push_booking_cnt">
+				push_booking_cnt = #push_booking_cnt#,
+			</isNotEmpty>
+			UPDATE_DT = now(),
+			UPDATE_ACCOUNT_SQ = #update_account_sq#
+		WHERE AD_SQ = #ad_sq#;
+	</update>
+	
+	<select id="selectAdvertList" parameterClass="array" resultMap="advertResult">
+		select
+			PSA.AD_SQ,
+			PSA.CAMPAIGN_SQ,
+			PSA.CREATIVE_TYPE_CD,
+			PSA.CREATIVE_SQ,
+			PSA.AD_NM,
+			PSA.AD_STATUS_CD,
+			PSA.SCH_STATUS_CD,
+			format(PSA.PUSH_BOOKING_CNT, 0) as PUSH_BOOKING_CNT,
+			format(PSA.REQUEST_CNT, 0) as REQUEST_CNT,
+			PSA.START_DT,
+			DATE_FORMAT(PSA.START_DT, '%Y-%m-%d') as START_DATE,
+			DATE_FORMAT(PSA.START_DT, '%H:%i:%s') as START_TIME,
+		    case
+		        when PSA.AD_STATUS_CD = @ad_status_test@ or PSA.AD_STATUS_CD = @ad_status_stand@ then PSA.START_DT
+		        when PSA.AD_STATUS_CD = @ad_status_send@ then concat(PSA.START_DT, ' ~ ', ifnull(PSA.REQUEST_END_DT, ''))
+		        when PSA.AD_STATUS_CD = @ad_status_com@ then concat(PSA.START_DT, ' ~ ', ifnull(PSA.REQUEST_END_DT, ''))
+		        else 'unknown'
+		    end as START_END_DT,
+			<isNotEmpty property="freezing_time">
+			if(PSA.START_DT > #freezing_time#, false, true) as FREEZING,
+			</isNotEmpty>
+			DATE_FORMAT(PSA.CREATE_DT, '%Y-%m-%d') as CREATE_DT,
+			DATE_FORMAT(PSA.CREATE_DT, '%Y-%m-%d') as UPDATE_DT,
+			PSC.CAMPAIGN_NM,
+			ADV.COMPANY_NM as ADV_COMPANY_NM,
+			BRD.ADV_BRAND_NM as ADV_BRAND_NM,
+			if(PSA.SCH_STATUS_CD in (@sch_status_booking_fail@, @sch_status_file_fail@, @sch_status_cancel_fail@), SCST.NAME, ADST.NAME) as AD_STATUS_NM 
+		from
+			PS_SVC_AD PSA
+		join
+			PS_SVC_CAMPAIGN PSC on PSA.CAMPAIGN_SQ = PSC.CAMPAIGN_SQ
+		join
+			TAD3.POC_BIZ_COMPANY ADV on PSC.ADV_COMPANY_SQ = ADV.BIZ_COMPANY_SQ
+		join
+			TAD3.POC_BIZ_USER BRD on PSC.ADV_ACCOUNT_SQ = BRD.ACCOUNT_SQ
+		join
+			TAD3.POC_CODE ADST on PSA.AD_STATUS_CD = ADST.ATT
+		join
+			TAD3.POC_CODE SCST on PSA.SCH_STATUS_CD = SCST.ATT
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="campaign_sq" prepend="AND">
+				PSA.CAMPAIGN_SQ = #campaign_sq#
+			</isNotEmpty>
+			<isNotEmpty property="ad_sq" prepend="AND">
+				PSA.AD_SQ = #ad_sq#
+			</isNotEmpty>
+			<isNotEmpty property="not_ad_sq" prepend="AND">
+				PSA.AD_SQ != #not_ad_sq#
+			</isNotEmpty>
+			<isNotEmpty property="ad_nm" prepend="AND">
+				PSA.AD_NM = #ad_nm#
+			</isNotEmpty>
+			<isNotEmpty property="ad_status_cd" prepend="AND">
+				PSA.AD_STATUS_CD = #ad_status_cd#
+			</isNotEmpty>
+			<isNotEmpty property="ad_status_cd_array" prepend="AND">
+				PSA.AD_STATUS_CD in 			
+				<iterate property="ad_status_cd_array" open="(" close=")" conjunction=",">
+					#ad_status_cd_array[]#
+				</iterate>
+			</isNotEmpty>
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				PSA.START_DT >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= PSA.START_DT 
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="campaign_nm" prepend="AND">
+					PSC.CAMPAIGN_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="ad_nm" prepend="AND">
+					PSA.AD_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="adv_company_nm" prepend="AND">
+					ADV.COMPANY_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="adv_brand_nm" prepend="AND">
+					BRD.ADV_BRAND_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="" prepend="AND">
+					(PSC.CAMPAIGN_NM like '%$search_value$%'
+						or PSA.AD_NM like '%$search_value$%'
+						or ADV.COMPANY_NM like '%$search_value$%'
+						or BRD.ADV_BRAND_NM like '%$search_value$%')
+				</isEqual>
+			</isNotEmpty>			
+		</dynamic>
+		order by 
+			PSA.CREATE_DT desc
+		<isNotEmpty property="per_page">
+			limit $cur_page$, $per_page$
+		</isNotEmpty>
+		;
+	</select>
+	
+	<select id="countAdvertList" parameterClass="array" resultMap="">
+		select
+			count(*)
+		from
+			PS_SVC_AD PSA
+		join
+			PS_SVC_CAMPAIGN PSC on PSA.CAMPAIGN_SQ = PSC.CAMPAIGN_SQ
+		join
+			TAD3.POC_BIZ_COMPANY ADV on PSC.ADV_COMPANY_SQ = ADV.BIZ_COMPANY_SQ
+		join
+			TAD3.POC_BIZ_USER BRD on PSC.ADV_ACCOUNT_SQ = BRD.ACCOUNT_SQ
+		join
+			TAD3.POC_CODE ADST on PSA.AD_STATUS_CD = ADST.ATT
+		join
+			TAD3.POC_CODE SCST on PSA.SCH_STATUS_CD = SCST.ATT
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="campaign_sq" prepend="AND">
+				PSA.CAMPAIGN_SQ = #campaign_sq#
+			</isNotEmpty>
+			<isNotEmpty property="ad_sq" prepend="AND">
+				PSA.AD_SQ = #ad_sq#
+			</isNotEmpty>
+			<isNotEmpty property="not_ad_sq" prepend="AND">
+				PSA.AD_SQ != #not_ad_sq#
+			</isNotEmpty>
+			<isNotEmpty property="ad_nm" prepend="AND">
+				PSA.AD_NM = #ad_nm#
+			</isNotEmpty>
+			<isNotEmpty property="ad_status_cd" prepend="AND">
+				PSA.AD_STATUS_CD = #ad_status_cd#
+			</isNotEmpty>
+			<isNotEmpty property="ad_status_cd_array" prepend="AND">
+				PSA.AD_STATUS_CD in 			
+				<iterate property="ad_status_cd_array" open="(" close=")" conjunction=",">
+					#ad_status_cd_array[]#
+				</iterate>
+			</isNotEmpty>
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				PSA.START_DT >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= PSA.START_DT 
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="campaign_nm" prepend="AND">
+					PSC.CAMPAIGN_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="ad_nm" prepend="AND">
+					PSA.AD_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="adv_company_nm" prepend="AND">
+					ADV.COMPANY_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="adv_brand_nm" prepend="AND">
+					BRD.ADV_BRAND_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="" prepend="AND">
+					(PSC.CAMPAIGN_NM like '%$search_value$%'
+						or PSA.AD_NM like '%$search_value$%'
+						or ADV.COMPANY_NM like '%$search_value$%'
+						or BRD.ADV_BRAND_NM like '%$search_value$%')
+				</isEqual>
+			</isNotEmpty>			
+		</dynamic>
+		;
+	</select>
+	
+	<select id="selectTargetInfo" parameterClass="array" resultMap="targetResult">
+		select
+			case
+				when TARGET_ELEMENT_CD = 'ADDR_DO_CD' or TARGET_ELEMENT_CD = 'ADDR_GUN_CD' then 'ADDR_CD'
+				else TARGET_ELEMENT_CD
+			end as TARGET_ELEMENT_CD, 
+			TARGET_VALUE
+		from
+			PS_SVC_TARGET_INFO
+		where
+			TARGET_ELEMENT_CD != 'MEDIA_ID'
+			and TARGET_ELEMENT_CD != 'CARRIER'
+			and TARGET_ELEMENT_CD != 'ADDR_CD'
+			and TARGET_ELEMENT_CD != 'VENDOR'
+			<isNotEmpty property="ad_sq" prepend="AND">
+				AD_SQ = #ad_sq#
+			</isNotEmpty>
+	</select>
+
+	<delete id="deleteTargetInfo" parameterClass="array">
+		delete from 
+			PS_SVC_TARGET_INFO 
+		where 
+			AD_SQ = #ad_sq#
+			<isNotEmpty property="target_element_cd" prepend="AND">
+				TARGET_ELEMENT_CD = #target_element_cd#
+			</isNotEmpty>
+			;
+	</delete>
+	
+	<insert id="insertTargetInfo" parameterClass="array">
+		INSERT INTO `ps_svc_target_info`
+			(`AD_SQ`,
+			`TARGET_ELEMENT_CD`,
+			`TARGET_VALUE`)
+		VALUES
+			(#ad_sq#,
+			#target_element_cd#,
+			#target_value#);
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+	
+	<select id="selectAdvertLastDt" parameterClass="" resultMap="">
+		select
+			DATE_FORMAT(START_DT, '%Y-%m-%d') as START_DT
+		from
+			PS_SVC_AD
+		where
+			AD_STATUS_CD != @ad_status_test@
+			and START_DT > now()
+		order by
+			START_DT desc
+		limit 1;
+	</select>
+	
+</sqlMap>

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="companyStatistics">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="companyStatisticsResult" class="statistics_vo" />
+	<resultMap id="searchCompanyResult" class="" />
+	
+	<!-- Q U E R I E S -->
+	
+	<select id="selectExistCompanyList" parameterClass="array" resultMap="searchCompanyResult">
+		SELECT 
+		    SC.adv_company_sq,
+		    ADV.company_nm
+		FROM
+    		ps_rpt_device RD
+        JOIN
+    		ps_svc_campaign SC ON RD.campaign_sq = SC.campaign_sq
+        JOIN
+    		tad3.poc_biz_company ADV ON SC.adv_company_sq = ADV.biz_company_sq
+		GROUP BY ADV.biz_company_sq
+	</select>
+	<select id="selectExistBrandList" parameterClass="array" resultMap="searchCompanyResult">
+		SELECT 
+		    SC.adv_account_sq,
+		    BU.adv_brand_nm
+		FROM
+    		ps_rpt_device RD
+        JOIN
+    		ps_svc_campaign SC ON RD.campaign_sq = SC.campaign_sq
+    	JOIN
+    		tad3.poc_biz_user BU ON BU.account_sq = SC.adv_account_sq
+    	WHERE
+    		SC.adv_company_sq = #adv_company_sq#
+	</select>
+	
+	<select id="countSelectCompanyList" parameterClass="array">
+		SELECT 
+			COUNT(*) 
+		FROM (
+				SELECT 
+			 	 	SC.adv_company_sq,
+			 	 	RD.report_dt AS start_dt
+				FROM
+		    		ps_rpt_device RD
+		        JOIN
+		    		ps_svc_campaign SC ON RD.campaign_sq = SC.campaign_sq
+		        JOIN
+		    		tad3.poc_biz_company ADV ON SC.adv_company_sq = ADV.biz_company_sq
+		    	<dynamic prepend="WHERE">
+					<isNotEmpty property="search_start_dt" prepend="AND">
+						start_dt >= #search_start_dt#
+					</isNotEmpty>
+					<isNotEmpty property="search_end_dt" prepend="AND">
+						#search_end_dt# >= start_dt
+					</isNotEmpty>
+					<isNotEmpty property="company_sq" prepend="AND">
+						SC.adv_company_sq = #company_sq#
+					</isNotEmpty>
+				</dynamic>	
+				GROUP BY ADV.biz_company_sq) A
+	</select>
+		
+	<select id="selectCompanyList" parameterClass="array" resultMap="companyStatisticsResult">
+		SELECT 
+		    SC.adv_company_sq,
+		    ADV.company_nm,
+		    SUM(RD.request_cnt) AS request_cnt,
+		    SUM(RD.success_cnt) AS success_cnt,
+		    IFNULL(ROUND(SUM(RD.success_cnt) * 100 / SUM(RD.request_cnt),2),0) AS success_rate,
+		    SUM(RD.web_click_cnt + RD.and_run_click_cnt + RD.ios_run_click_cnt + RD.tst_dl_click_cnt + RD.mar_dl_click_cnt + RD.itu_dl_click_cnt + RD.alt_click_cnt) AS click_cnt,
+		    IFNULL(ROUND(SUM(RD.web_click_cnt + RD.and_run_click_cnt + RD.ios_run_click_cnt + RD.tst_dl_click_cnt + RD.mar_dl_click_cnt + RD.itu_dl_click_cnt + RD.alt_click_cnt) * 100 / SUM(RD.success_cnt),2),0) AS click_rate
+		FROM
+    		ps_rpt_device RD
+        JOIN
+    		ps_svc_campaign SC ON RD.campaign_sq = SC.campaign_sq
+        JOIN
+    		tad3.poc_biz_company ADV ON SC.adv_company_sq = ADV.biz_company_sq
+    	<dynamic prepend="WHERE">
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				RD.report_dt >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= RD.report_dt
+			</isNotEmpty>
+			<isNotEmpty property="company_sq" prepend="AND">
+				SC.adv_company_sq = #company_sq#
+			</isNotEmpty>
+		</dynamic>	
+		GROUP BY ADV.biz_company_sq
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+	
+	<select id="countSelectBrandList" parameterClass="array">
+	SELECT 
+		COUNT(*) 
+	FROM
+		(SELECT 
+		    SC.adv_company_sq,
+		    ADV.company_nm,
+		    SC.adv_account_sq,
+		    BU.adv_brand_nm,
+		    SUM(RD.request_cnt) AS request_cnt,
+		    SUM(RD.success_cnt) AS success_cnt,
+		    IFNULL(ROUND(SUM(RD.success_cnt) * 100 / SUM(RD.request_cnt),2),0) AS success_rate,
+		    SUM(RD.web_click_cnt + RD.and_run_click_cnt + RD.ios_run_click_cnt + RD.tst_dl_click_cnt + RD.mar_dl_click_cnt + RD.itu_dl_click_cnt + RD.alt_click_cnt) AS click_cnt,
+		    IFNULL(ROUND(SUM(RD.web_click_cnt + RD.and_run_click_cnt + RD.ios_run_click_cnt + RD.tst_dl_click_cnt + RD.mar_dl_click_cnt + RD.itu_dl_click_cnt + RD.alt_click_cnt) * 100 / SUM(RD.success_cnt),2),0) AS click_rate
+		FROM
+    		ps_rpt_device RD
+        JOIN
+    		ps_svc_campaign SC ON RD.campaign_sq = SC.campaign_sq
+        JOIN
+    		tad3.poc_biz_company ADV ON SC.adv_company_sq = ADV.biz_company_sq
+    	JOIN
+    		tad3.poc_biz_user BU ON BU.account_sq = SC.adv_account_sq
+    	WHERE
+    		SC.adv_company_sq = #adv_company_sq#
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				RD.report_dt >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= RD.report_dt
+			</isNotEmpty>
+			<isNotEmpty property="adv_account_sq" prepend="AND">
+				 SC.adv_account_sq = #adv_account_sq#
+			</isNotEmpty>
+		GROUP BY SC.adv_account_sq) A
+	</select>
+		
+	<select id="selectBrandList" parameterClass="array" resultMap="companyStatisticsResult">
+		SELECT 
+		    SC.adv_company_sq,
+		    ADV.company_nm,
+		    SC.adv_account_sq,
+		    BU.adv_brand_nm,
+		    SUM(RD.request_cnt) AS request_cnt,
+		    SUM(RD.success_cnt) AS success_cnt,
+		    IFNULL(ROUND(SUM(RD.success_cnt) * 100 / SUM(RD.request_cnt),2),0) AS success_rate,
+		    SUM(RD.web_click_cnt + RD.and_run_click_cnt + RD.ios_run_click_cnt + RD.tst_dl_click_cnt + RD.mar_dl_click_cnt + RD.itu_dl_click_cnt + RD.alt_click_cnt) AS click_cnt,
+		    IFNULL(ROUND(SUM(RD.web_click_cnt + RD.and_run_click_cnt + RD.ios_run_click_cnt + RD.tst_dl_click_cnt + RD.mar_dl_click_cnt + RD.itu_dl_click_cnt + RD.alt_click_cnt) * 100 / SUM(RD.success_cnt),2),0) AS click_rate
+		FROM
+    		ps_rpt_device RD
+        JOIN
+    		ps_svc_campaign SC ON RD.campaign_sq = SC.campaign_sq
+        JOIN
+    		tad3.poc_biz_company ADV ON SC.adv_company_sq = ADV.biz_company_sq
+    	JOIN
+    		tad3.poc_biz_user BU ON BU.account_sq = SC.adv_account_sq
+    	WHERE
+    		SC.adv_company_sq = #adv_company_sq#
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				RD.report_dt >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= RD.report_dt
+			</isNotEmpty>
+			<isNotEmpty property="adv_account_sq" prepend="AND">
+				 SC.adv_account_sq = #adv_account_sq#
+			</isNotEmpty>
+		GROUP BY SC.adv_account_sq
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+	
+	<select id="countSelectMediaList" parameterClass="array">
+		SELECT 
+			COUNT(*) 
+		FROM
+			(SELECT 
+				SC.adv_account_sq, 
+				RM.media_id, 
+				SM.media_nm, 
+				SUM(RM.request_cnt) AS request_cnt,
+				SUM(RM.success_cnt) AS success_cnt,
+				IFNULL(ROUND(SUM(RM.success_cnt) * 100 / SUM(RM.request_cnt),2),0) AS success_rate,
+				SUM(RM.web_click_cnt + RM.and_run_click_cnt + RM.ios_run_click_cnt + RM.tst_dl_click_cnt + RM.mar_dl_click_cnt + RM.itu_dl_click_cnt + RM.alt_click_cnt) AS click_cnt,
+				IFNULL(ROUND(SUM(RM.web_click_cnt + RM.and_run_click_cnt + RM.ios_run_click_cnt + RM.tst_dl_click_cnt + RM.mar_dl_click_cnt + RM.itu_dl_click_cnt + RM.alt_click_cnt) * 100 / SUM(RM.success_cnt),2),0) AS click_rate 
+			FROM 
+				ps_rpt_media RM, 
+				ps_svc_media SM, 
+				ps_svc_campaign SC
+			WHERE 
+				RM.media_id = SM.media_id
+			AND 
+				RM.campaign_sq = SC.campaign_sq
+			AND 
+				SC.adv_account_sq = #adv_account_sq#
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				RM.report_dt >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= RM.report_dt
+			</isNotEmpty>
+			GROUP BY RM.media_id) A
+	</select>
+		
+	<select id="selectMediaList" parameterClass="array" resultMap="companyStatisticsResult">
+		SELECT 
+			SC.adv_account_sq, 
+			RM.media_id, 
+			SM.media_nm, 
+			SUM(RM.request_cnt) AS request_cnt,
+			SUM(RM.success_cnt) AS success_cnt,
+			IFNULL(ROUND(SUM(RM.success_cnt) * 100 / SUM(RM.request_cnt),2),0) AS success_rate,
+			SUM(RM.web_click_cnt + RM.and_run_click_cnt + RM.ios_run_click_cnt + RM.tst_dl_click_cnt + RM.mar_dl_click_cnt + RM.itu_dl_click_cnt + RM.alt_click_cnt) AS click_cnt,
+			IFNULL(ROUND(SUM(RM.web_click_cnt + RM.and_run_click_cnt + RM.ios_run_click_cnt + RM.tst_dl_click_cnt + RM.mar_dl_click_cnt + RM.itu_dl_click_cnt + RM.alt_click_cnt) * 100 / SUM(RM.success_cnt),2),0) AS click_rate 
+		FROM 
+			ps_rpt_media RM, 
+			ps_svc_media SM, 
+			ps_svc_campaign SC
+		WHERE 
+			RM.media_id = SM.media_id
+		AND 
+			RM.campaign_sq = SC.campaign_sq
+		AND 
+			SC.adv_account_sq = #adv_account_sq#
+		<isNotEmpty property="search_start_dt" prepend="AND">
+			RM.report_dt >= #search_start_dt#
+		</isNotEmpty>
+		<isNotEmpty property="search_end_dt" prepend="AND">
+			#search_end_dt# >= RM.report_dt
+		</isNotEmpty>
+		GROUP BY RM.media_id
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+</sqlMap>

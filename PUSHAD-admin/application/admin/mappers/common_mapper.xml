@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="common">
+	
+	<!-- R E S U L T   M A P S -->
+	
+	<resultMap id="codeListResult" class="" />
+
+	<resultMap id="advCompanyListResult" class="" />
+	
+	<resultMap id="advBrandListResult" class="" />
+
+	<resultMap id="codeListResultTreeview" class="" />
+
+	<resultMap id="deviceModelListResult" class="" />
+
+	<resultMap id="deviceListResultTreeview" class="" >
+		<result property="key" column="MWEB_MODEL_NM" />
+		<result property="title" column="DEVICE_NM" />
+		<result property="select" column="TARGET_SELECT" />
+	</resultMap>
+
+	<resultMap id="sidoListResult" class="" />
+
+	<resultMap id="sigugunListResult" class="" />
+
+	<resultMap id="regionListResult" class="" />
+
+	<resultMap id="searchRegionResult" class="" />
+	
+	<resultMap id="freezingResult" class="" />
+
+	<resultMap id="frequencyResult" class="" />
+
+	<resultMap id="pushTargetResult" class="" />
+
+	<!--  Q U E R I E S  -->
+
+	<select id="selectCodeList" parameterClass="array" resultMap="codeListResult">
+		select
+			NAME,
+			<isNotEmpty property="key_column">
+				<isEqual property="key_column" compareValue="">
+					ATT as `key`
+				</isEqual>
+				<isEqual property="key_column" compareValue="att">
+					ATT as `key`
+				</isEqual>
+				<isEqual property="key_column" compareValue="bit_att">
+					BIT_ATT as `key`
+				</isEqual>
+				<isEqual property="key_column" compareValue="name">
+					NAME as `key`
+				</isEqual>
+				<isEqual property="key_column" compareValue="value1">
+					VALUE1 as `key`
+				</isEqual>
+				<isEqual property="key_column" compareValue="value2">
+					VALUE2 as `key`
+				</isEqual>
+			</isNotEmpty>			 
+		from 
+			TAD3.POC_CODE
+		where 
+			ENT = #ent#
+		order by
+			BIT_ATT
+	</select>
+	
+	<select id="selectCodeName" parameterClass=""  resultMap="">
+		SELECT NAME
+		FROM TAD3.POC_CODE
+		WHERE ATT = #att#
+	</select>
+		
+	<select id="selectAdvCompanyList" parameterClass="array" resultMap="advCompanyListResult">
+		select
+			PBC.BIZ_COMPANY_SQ as ADV_COMPANY_SQ,
+			PBC.COMPANY_NM as ADV_COMPANY_NM
+		from
+			TAD3.POC_BIZ_COMPANY PBC
+		join
+			TAD3.POC_BIZ_USER PBU on PBC.BIZ_COMPANY_SQ = PBU.BIZ_COMPANY_SQ
+		where
+			PBC.COMPANY_TYPE_CD = 'BIZTYP101'
+			and PBC.COMPANY_STATUS_CD = 'ACS101'
+			and PBU.USER_STATUS_CD = 'ACS101'
+			and PBU.ADV_BRAND_NM is not null
+			<isNotEmpty property="adv_company_nm" prepend="AND">
+				PBC.COMPANY_NM like '%$adv_company_nm$%'
+			</isNotEmpty>
+		group by PBC.BIZ_COMPANY_SQ
+		order by PBC.COMPANY_NM asc
+		<isNotEmpty property="maxRows">
+			limit $maxRows$
+		</isNotEmpty>
+	</select>
+
+	<select id="selectAdvBrandList" parameterClass="array" resultMap="advBrandListResult">
+		select
+			ACCOUNT_SQ as ADV_ACCOUNT_SQ,
+			ADV_BRAND_NM as ADV_BRAND_NM
+		from
+			TAD3.POC_BIZ_USER
+		where
+			BIZ_COMPANY_SQ = #adv_company_sq#
+			and USER_STATUS_CD = 'ACS101'
+			and ADV_BRAND_NM is not null
+			and ADV_BRAND_NM != ''
+		order by ADV_BRAND_NM asc;
+	</select>
+	
+	<insert id="insertReportAccount" parameterClass="array">
+		insert into TAD3. 
+			(``, 
+			``, 
+			`CREATE_DT`,
+			`UPDATE_DT`,
+			`CREATE_ACCOUNT_SQ`,
+			`UPDATE_ACCOUNT_SQ`)
+		VALUES
+			(##,
+			##,
+			now(),
+			now(),
+			#create_account_sq#,
+			#update_account_sq#)
+			<selectKey resultClass="int" keyProperty="">
+  				SELECT LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+	
+	<select id="selectCodeListTreeview" parameterClass="array" resultMap="codeListResultTreeview">
+		select 
+		    PC.NAME as `title`,
+			<isNotEmpty property="key_column">
+				<isEqual property="key_column" compareValue="">
+					PC.ATT as `key`,
+				</isEqual>
+				<isEqual property="key_column" compareValue="att">
+					PC.ATT as `key`,
+				</isEqual>
+				<isEqual property="key_column" compareValue="bit_att">
+					PC.BIT_ATT as `key`,
+				</isEqual>
+				<isEqual property="key_column" compareValue="name">
+					PC.NAME as `key`,
+				</isEqual>
+				<isEqual property="key_column" compareValue="value1">
+					PC.VALUE1 as `key`,
+				</isEqual>
+				<isEqual property="key_column" compareValue="value2">
+					PC.VALUE2 as `key`,
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="ad_sq">
+		    if(isnull(TARGET.TARGET_VALUE), 'false', 'true') as `select`
+			</isNotEmpty>
+			<isEmpty property="ad_sq">
+		    'false' as `select`
+			</isEmpty>
+		from
+		    TAD3.POC_CODE PC
+		<isNotEmpty property="ad_sq">
+	        left join
+			    PS_SVC_TARGET_INFO TARGET 
+		    		on TARGET.AD_SQ = #ad_sq#
+		            and TARGET.TARGET_ELEMENT_CD = #target_element_cd# 
+					<isNotEmpty property="key_column">
+						<isEqual property="key_column" compareValue="" prepend="AND">
+							PC.ATT = TARGET.TARGET_VALUE
+						</isEqual>
+						<isEqual property="key_column" compareValue="att" prepend="AND">
+							PC.ATT = TARGET.TARGET_VALUE
+						</isEqual>
+						<isEqual property="key_column" compareValue="bit_att" prepend="AND">
+							PC.BIT_ATT = TARGET.TARGET_VALUE
+						</isEqual>
+						<isEqual property="key_column" compareValue="name" prepend="AND">
+							PC.NAME = TARGET.TARGET_VALUE
+						</isEqual>
+						<isEqual property="key_column" compareValue="value1" prepend="AND">
+							PC.VALUE1 = TARGET.TARGET_VALUE
+						</isEqual>
+						<isEqual property="key_column" compareValue="value2" prepend="AND">
+							PC.VALUE2 = TARGET.TARGET_VALUE
+						</isEqual>
+					</isNotEmpty>
+		</isNotEmpty>
+		where
+		    ent = #ent#
+		    <isNotEmpty property="not_att" prepend="AND">
+				att != #not_att#
+			</isNotEmpty>
+		order by bit_att;
+	</select>
+	
+	<select id="selectCodeName" parameterClass=""  resultMap="">
+		SELECT NAME
+		FROM TAD3.POC_CODE
+		WHERE ATT = #att#
+	</select>
+	
+	<select id="selectDeviceModelList" parameterClass="" resultMap="deviceModelListResult">
+		select
+			MWEB_MODEL_NM
+		from
+			TAD3.POC_DEVICE_LIST
+		where
+			MWEB_MODEL_NM in
+		<iterate property="device_model_list" open="(" close=")" conjunction=",">
+			#device_model_list[]#
+		</iterate>
+	</select>
+	
+	<select id="selectDeviceListTreeview" parameterClass="array" resultMap="deviceListResultTreeview">
+		select 
+		    PDL.DEVICE_SQ,
+		    PDL.MWEB_MODEL_NM,
+		    concat('[ ', PDL.BRAND_NM, ' - ', PDL.MWEB_MODEL_NM, ' ]') as DEVICE_NM,
+		    PCMAKER.NAME as MAKER_NM,
+		    PCTYPE.NAME as DEVICE_TYPE_NM,
+		    <isNotEmpty property="ad_sq">
+		    	if(isnull(TARGET.TARGET_VALUE), 'false', 'true') as TARGET_SELECT
+			</isNotEmpty>
+			<isEmpty property="ad_sq">
+		    	'false' as TARGET_SELECT
+			</isEmpty>
+		from
+		    TAD3.POC_DEVICE_LIST PDL
+		        join
+		    TAD3.POC_CODE PCMAKER ON PDL.MAKER_CD = PCMAKER.ATT
+		        join
+		    TAD3.POC_CODE PCTYPE ON PDL.DEVICE_TYPE_CD = PCTYPE.ATT
+		    <isNotEmpty property="ad_sq">
+		        left join
+			    PS_SVC_TARGET_INFO TARGET on 
+			    	TARGET.AD_SQ = #ad_sq# 
+			    	and TARGET.TARGET_ELEMENT_CD = #target_element_cd# 
+			    	and TARGET.TARGET_VALUE = PDL.MWEB_MODEL_NM
+			</isNotEmpty>
+		order by PCMAKER.ATT , PCTYPE.ATT , PDL.MWEB_MODEL_NM;
+	</select>
+	
+	<select id="selectSidoList" parameterClass="" resultMap="sidoListResult">
+		select SIDO_CD as SIDO_CD, SIDO_NM
+		from TAD3.POC_REGION_CODE
+		where SIDO_CD != #sido_cd#
+		and SIGUGUN_CD = '000';
+	</select>
+	
+	<select id="selectSigugunList" parameterClass="" resultMap="sigugunListResult">
+		select concat(SIDO_CD, rpad(SIGUGUN_CD, 3, 0)) as SIGUGUN_CD, SIGUGUN_NM
+		from TAD3.POC_REGION_CODE
+		where SIDO_CD = #sido_cd#
+		and SIGUGUN_CD != '000'
+		and DONG_CD = '000';
+	</select>
+	
+	<select id="selectRegionList" parameterClass="array" resultMap="regionListResult">
+		select 
+		    PSTI.TARGET_VALUE as REGION_CD, concat(SIDO_NM, ' ', if(SIGUGUN_NM is not null, SIGUGUN_NM, '')) as REGION_NM
+		from
+		    PS_SVC_TARGET_INFO PSTI
+		join
+		    TAD3.POC_REGION_CODE PRC on 
+		    	PRC.SIDO_CD = substr(PSTI.TARGET_VALUE, 1, 2)
+		        and PRC.SIGUGUN_CD = substr(rpad(PSTI.TARGET_VALUE, 5, 0), 3, 3)
+		        and PRC.DONG_CD = '000'
+		where
+		    PSTI.AD_SQ = #ad_sq#
+        		and (PSTI.TARGET_ELEMENT_CD = @target_type_region_sido@ or PSTI.TARGET_ELEMENT_CD = @target_type_region_gugun@);
+	</select>
+	
+	<select id="selectSearchRegion" parameterClass="array" resultMap="searchRegionResult">
+        select
+        	concat(SIDO_CD, if(SIGUGUN_CD != '000', SIGUGUN_CD, '')) as REGION_CD,
+        	concat(SIDO_NM, ' ', if(SIGUGUN_NM is not null, SIGUGUN_NM, '')) as REGION_NM
+		from
+			TAD3.POC_REGION_CODE
+		where
+			DONG_CD = '000'
+			<isNotEmpty property="sigugun_list" prepend="AND">
+				concat(SIDO_CD, SIGUGUN_CD) in
+				<iterate property="sigugun_list" open="(" close=")" conjunction=",">
+					#sigugun_list[]#
+				</iterate>
+			</isNotEmpty>
+	</select>
+	
+	<select id="selectFreezing" parameterClass="" resultMap="freezingResult">
+		select 
+			APPLY_TIME,
+			CREATE_DT,
+			UPDATE_DT
+		from
+			PS_POC_FREEZING
+		order by CREATE_DT desc
+		limit 1
+	</select>
+	
+	<select id="selectFrequency" parameterClass="array" resultMap="frequencyResult">
+		select
+			FREQUENCY_SQ,
+			START_DT,
+			CYCLE,
+			FREQUENCY_CNT
+		from
+			PS_POC_FREQUENCY
+		where
+			<isEmpty property="start_dt">
+				now() >= START_DT
+			</isEmpty>
+			<isNotEmpty property="start_dt">
+				#start_dt# >= START_DT
+			</isNotEmpty>	
+		order by START_DT desc
+		limit 1;
+	</select>
+	
+	<select id="selectFrequencyLastDt" parameterClass="" resultMap="">
+		select
+			DATE_FORMAT(START_DT, '%Y-%m-%d') as START_DT
+		from
+			PS_POC_FREQUENCY
+		order by START_DT desc
+		limit 1;
+	</select>
+	
+	<select id="countParamList" parameterClass="" resultMap="">
+		select 
+		    count(distinct PSP.DEVICE_ID)
+		from
+		    PS_SVC_PARAM PSP
+		        join
+		    PS_SVC_PARAM_MEDIA PSPM ON PSP.DEVICE_ID = PSPM.DEVICE_ID
+		    	join
+		    PS_SVC_MEDIA PSM on PSPM.MEDIA_ID = PSM.MEDIA_ID
+		where
+		    PSP.TERMS_BIT between 8 and 15
+		        and PSP.LAST_MEDIA_ID > 0
+		        and PSPM.PARAM_MEDIA_STATUS_CD = @param_status_enable@
+		        and PSM.MEDIA_STATUS_CD = @media_status_cd_enable@;
+	</select>
+	
+	<select id="selectCarrierTargetValue" parameterClass="" resultMap="">
+		select
+			group_concat(VALUE2 separator ',')
+		from
+			TAD3.POC_CODE
+		where
+			ENT = 'CARIER'
+			and ATT in
+		<iterate property="carrier_cd_list" open="(" close=")" conjunction=",">
+			#carrier_cd_list[]#
+		</iterate>
+	</select>
+	
+	<select id="selectPushTarget" parameterClass=""  resultMap="pushTargetResult">
+		select
+			PSP.DEVICE_ID,
+			PSP.MDN,
+			PSP.CARRIER,
+			PSP.VENDOR,
+			PSP.OS_VER,
+			PSPM.PP_ID,
+			PSM.MEDIA_ID,
+			PSM.AUTH_PARAM,
+			PSM.MEDIA_CATEGORY_CD
+		from
+			PS_SVC_PARAM PSP,
+			PS_SVC_MEDIA PSM,
+			PS_SVC_PARAM_MEDIA PSPM
+		where
+			PSP.LAST_MEDIA_ID = PSM.MEDIA_ID
+			and PSP.LAST_MEDIA_ID = PSPM.MEDIA_ID
+			and PSP.DEVICE_ID = PSPM.DEVICE_ID
+			and PSP.TERMS_BIT between 8 and 15
+			and PSP.LAST_MEDIA_ID > 0
+			and PSP.MDN = #mdn#
+		order by
+			PSP.UPDATE_DT desc
+		limit 1;
+	</select>
+	
+	<select id="selectVendorList" parameterClass="array" resultMap="">
+		select
+			distinct PC.NAME as VENDOR
+		from
+			TAD3.POC_DEVICE_LIST PDL
+		join
+			TAD3.POC_CODE PC on PDL.MAKER_CD = PC.ATT
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="model_nm_list" prepend="AND">
+				PDL.MWEB_MODEL_NM in
+				<iterate property="model_nm_list" open="(" close=")" conjunction=",">
+					#model_nm_list[]#
+				</iterate>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+</sqlMap>

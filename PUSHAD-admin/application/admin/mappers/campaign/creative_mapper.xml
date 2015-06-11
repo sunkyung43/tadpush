@@ -1,0 +1,824 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="creative">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="creativeTextResult" class="creative_vo" />
+	<resultMap id="creativeImageResult" class="creative_vo" />
+	<resultMap id="creativePopupTextBannerResult" class="creative_vo" />
+	<resultMap id="creativePopupTextResult" class="creative_vo" />
+	<resultMap id="creativePopupImageBannerResult" class="creative_vo" />
+	<resultMap id="creativePopupImageResult" class="creative_vo" />
+	<resultMap id="creativeJbDefaultResult" class="creative_vo" />
+	<resultMap id="creativeJbBigTextResult" class="creative_vo" />
+	<resultMap id="creativeJbInBoxResult" class="creative_vo" />
+	<resultMap id="creativeJbBigPictureResult" class="creative_vo" />
+	
+	<!-- Q U E R I E S -->
+
+	<select id="selectCreativeText" parameterClass="" resultMap="creativeTextResult">
+		select
+			CREATIVE_SQ,
+		    TICKET_TEXT,
+		    LARGE_ICON_IMAGE,
+		    CONTENT_TITLE,
+		    CONTENT_TEXT,
+		    SUB_TEXT,
+		    LANDING_TYPE_CD,
+		    LANDING_TYPE_URL,
+		    AND_RUN_URL,
+		    TST_DL_URL,
+		    MAR_DL_URL,
+		    ALT_URL
+		from
+			PS_SVC_CREATIVE_TEXT
+		where
+			CREATIVE_SQ = #creative_sq#;
+	</select>
+
+	<select id="selectCreativeImage" parameterClass="" resultMap="creativeImageResult">
+		select CREATIVE_SQ,
+		    TICKET_TEXT,
+		    BANNER_IMAGE,
+		    LANDING_TYPE_CD,
+		    LANDING_TYPE_URL,
+		    AND_RUN_URL,
+		    TST_DL_URL,
+		    MAR_DL_URL,
+		    ALT_URL
+		from
+			PS_SVC_CREATIVE_IMAGE
+		where
+			CREATIVE_SQ = #creative_sq#;
+	</select>
+
+	<select id="selectCreativePopupTextBanner" parameterClass="" resultMap="creativePopupTextBannerResult">
+		select CREATIVE_SQ,
+		    TICKET_TEXT,
+		    LARGE_ICON_IMAGE,
+		    CONTENT_TITLE,
+		    CONTENT_TEXT,
+		    POPUP_TITLE,
+		    POPUP_CONTENT_TEXT,
+		    LANDING_BUTTON_TITLE,
+		    LANDING_TYPE_CD,
+		    LANDING_TYPE_URL,
+		    AND_RUN_URL,
+		    TST_DL_URL,
+		    MAR_DL_URL,
+		    ALT_URL
+		from
+			PS_SVC_CREATIVE_POPUP_TEXT_BANNER
+		where
+			CREATIVE_SQ = #creative_sq#;
+	</select>
+
+	<select id="selectCreativePopupText" parameterClass="" resultMap="creativePopupTextResult">
+		select CREATIVE_SQ,
+		    TICKET_TEXT,
+		    POPUP_TITLE,
+		    POPUP_CONTENT_TEXT,
+		    LANDING_BUTTON_TITLE,
+		    LANDING_TYPE_CD,
+		    LANDING_TYPE_URL,
+		    AND_RUN_URL,
+		    TST_DL_URL,
+		    MAR_DL_URL,
+		    ALT_URL
+		from
+		 PS_SVC_CREATIVE_POPUP_TEXT
+		where
+			CREATIVE_SQ = #creative_sq#;
+	</select>
+
+	<select id="selectCreativePopupImageBanner" parameterClass="" resultMap="creativePopupImageBannerResult">
+		select CREATIVE_SQ,
+		    TICKET_TEXT,
+		    LARGE_ICON_IMAGE,
+		    CONTENT_TITLE,
+		    CONTENT_TEXT,
+		    POPUP_IMAGE,
+		    LANDING_BUTTON_TITLE,
+		    LANDING_TYPE_CD,
+		    LANDING_TYPE_URL,
+		    AND_RUN_URL,
+		    TST_DL_URL,
+		    MAR_DL_URL,
+		    ALT_URL
+		from
+			PS_SVC_CREATIVE_POPUP_IMAGE_BANNER
+		where
+			CREATIVE_SQ = #creative_sq#;
+	</select>
+
+	<select id="selectCreativePopupImage" parameterClass="" resultMap="creativePopupImageResult">
+		select CREATIVE_SQ,
+		    TICKET_TEXT,
+		    POPUP_IMAGE,
+		    LANDING_BUTTON_TITLE,
+		    LANDING_TYPE_CD,
+		    LANDING_TYPE_URL,
+		    AND_RUN_URL,
+		    TST_DL_URL,
+		    MAR_DL_URL,
+		    ALT_URL
+		from
+			PS_SVC_CREATIVE_POPUP_IMAGE
+		where
+			CREATIVE_SQ = #creative_sq#;
+	</select>
+	
+	<select id="selectCreativeJbDefault" parameterClass="" resultMap="creativeJbDefaultResult">
+		select CREATIVE_SQ,
+		    TICKET_TEXT,
+		    LARGE_ICON_IMAGE,
+		    CONTENT_TITLE,
+		    CONTENT_TEXT,
+		    SUMMARY_TEXT,
+		    LANDING_TYPE_CD,
+		    LANDING_TYPE_URL,
+		    AND_RUN_URL,
+		    TST_DL_URL,
+		    MAR_DL_URL,
+		    ALT_URL,
+		    ACTION1_LANDING_TYPE_CD,
+		    ACTION1_TEXT,
+		    ACTION1_LANDING_TYPE_URL,
+		    ACTION1_AND_RUN_URL,
+		    ACTION1_TST_DL_URL,
+		    ACTION1_MAR_DL_URL,
+		    ACTION1_ALT_URL,
+		    ACTION2_LANDING_TYPE_CD,
+		    ACTION2_TEXT,
+		    ACTION2_LANDING_TYPE_URL,
+		    ACTION2_AND_RUN_URL,
+		    ACTION2_TST_DL_URL,
+		    ACTION2_MAR_DL_URL,
+		    ACTION2_ALT_URL,
+		    ACTION3_LANDING_TYPE_CD,
+		    ACTION3_TEXT,
+		    ACTION3_LANDING_TYPE_URL,
+		    ACTION3_AND_RUN_URL,
+		    ACTION3_TST_DL_URL,
+		    ACTION3_MAR_DL_URL,
+		    ACTION3_ALT_URL
+		from
+			PS_SVC_CREATIVE_JB_DEFAULT
+		where
+			CREATIVE_SQ = #creative_sq#;
+	</select>
+
+	<select id="selectCreativeJbBigText" parameterClass="" resultMap="creativeJbBigTextResult">
+		select CREATIVE_SQ,
+		    TICKET_TEXT,
+		    LARGE_ICON_IMAGE,
+		    CONTENT_TITLE,
+		    CONTENT_TEXT,
+		    SUB_TEXT,
+		    SUMMARY_TEXT,
+		    LANDING_TYPE_CD,
+		    LANDING_TYPE_URL,
+		    AND_RUN_URL,
+		    TST_DL_URL,
+		    MAR_DL_URL,
+		    ALT_URL,
+		    ACTION1_LANDING_TYPE_CD,
+		    ACTION1_TEXT,
+		    ACTION1_LANDING_TYPE_URL,
+		    ACTION1_AND_RUN_URL,
+		    ACTION1_TST_DL_URL,
+		    ACTION1_MAR_DL_URL,
+		    ACTION1_ALT_URL,
+		    ACTION2_LANDING_TYPE_CD,
+		    ACTION2_TEXT,
+		    ACTION2_LANDING_TYPE_URL,
+		    ACTION2_AND_RUN_URL,
+		    ACTION2_TST_DL_URL,
+		    ACTION2_MAR_DL_URL,
+		    ACTION2_ALT_URL,
+		    ACTION3_LANDING_TYPE_CD,
+		    ACTION3_TEXT,
+		    ACTION3_LANDING_TYPE_URL,
+		    ACTION3_AND_RUN_URL,
+		    ACTION3_TST_DL_URL,
+		    ACTION3_MAR_DL_URL,
+		    ACTION3_ALT_URL
+		from 
+			PS_SVC_CREATIVE_JB_BIG_TEXT
+		where
+			CREATIVE_SQ = #creative_sq#;
+	</select>
+
+	<select id="selectCreativeJbInBox" parameterClass="" resultMap="creativeJbInBoxResult">
+		select CREATIVE_SQ,
+		    TICKET_TEXT,
+		    LARGE_ICON_IMAGE,
+		    CONTENT_TITLE,
+		    CONTENT_TEXT,
+		    INBOX_TEXT_LINE_1,
+		    INBOX_TEXT_LINE_2,
+		    INBOX_TEXT_LINE_3,
+		    INBOX_TEXT_LINE_4,
+		    INBOX_TEXT_LINE_5,
+		    INBOX_TEXT_LINE_6,
+		    INBOX_TEXT_LINE_7,
+		    SUMMARY_TEXT,
+		    LANDING_TYPE_CD,
+		    LANDING_TYPE_URL,
+		    AND_RUN_URL,
+		    TST_DL_URL,
+		    MAR_DL_URL,
+		    ALT_URL,
+		    ACTION1_LANDING_TYPE_CD,
+		    ACTION1_TEXT,
+		    ACTION1_LANDING_TYPE_URL,
+		    ACTION1_AND_RUN_URL,
+		    ACTION1_TST_DL_URL,
+		    ACTION1_MAR_DL_URL,
+		    ACTION1_ALT_URL,
+		    ACTION2_LANDING_TYPE_CD,
+		    ACTION2_TEXT,
+		    ACTION2_LANDING_TYPE_URL,
+		    ACTION2_AND_RUN_URL,
+		    ACTION2_TST_DL_URL,
+		    ACTION2_MAR_DL_URL,
+		    ACTION2_ALT_URL,
+		    ACTION3_LANDING_TYPE_CD,
+		    ACTION3_TEXT,
+		    ACTION3_LANDING_TYPE_URL,
+		    ACTION3_AND_RUN_URL,
+		    ACTION3_TST_DL_URL,
+		    ACTION3_MAR_DL_URL,
+		    ACTION3_ALT_URL
+		from 
+			PS_SVC_CREATIVE_JB_INBOX
+		where
+			CREATIVE_SQ = #creative_sq#;
+	</select>
+
+	<select id="selectCreativeJbBigPicture" parameterClass="" resultMap="creativeJbBigPictureResult">
+		select CREATIVE_SQ,
+		    TICKET_TEXT,
+		    LARGE_ICON_IMAGE,
+		    CONTENT_TITLE,
+		    CONTENT_TEXT,
+		    SUMMARY_TEXT,
+		    BANNER_IMAGE,
+		    LANDING_TYPE_CD,
+		    LANDING_TYPE_URL,
+		    AND_RUN_URL,
+		    TST_DL_URL,
+		    MAR_DL_URL,
+		    ALT_URL,
+		    ACTION1_LANDING_TYPE_CD,
+		    ACTION1_TEXT,
+		    ACTION1_LANDING_TYPE_URL,
+		    ACTION1_AND_RUN_URL,
+		    ACTION1_TST_DL_URL,
+		    ACTION1_MAR_DL_URL,
+		    ACTION1_ALT_URL,
+		    ACTION2_LANDING_TYPE_CD,
+		    ACTION2_TEXT,
+		    ACTION2_LANDING_TYPE_URL,
+		    ACTION2_AND_RUN_URL,
+		    ACTION2_TST_DL_URL,
+		    ACTION2_MAR_DL_URL,
+		    ACTION2_ALT_URL,
+		    ACTION3_LANDING_TYPE_CD,
+		    ACTION3_TEXT,
+		    ACTION3_LANDING_TYPE_URL,
+		    ACTION3_AND_RUN_URL,
+		    ACTION3_TST_DL_URL,
+		    ACTION3_MAR_DL_URL,
+		    ACTION3_ALT_URL
+		from 
+			PS_SVC_CREATIVE_JB_BIG_PICTURE
+		where
+			CREATIVE_SQ = #creative_sq#;
+	</select>
+		
+	<insert id="insertCreativeText" parameterClass="creative_vo">
+		insert into `ps_svc_creative_text`
+			(`TICKET_TEXT`,
+			`LARGE_ICON_IMAGE`,
+			`CONTENT_TITLE`,
+			`CONTENT_TEXT`,
+			`SUB_TEXT`,
+			`LANDING_TYPE_CD`,
+			`LANDING_TYPE_URL`,
+			`AND_RUN_URL`,
+			`TST_DL_URL`,
+			`MAR_DL_URL`,
+			`ALT_URL`)
+		values
+			(#TICKET_TEXT#,
+			#LARGE_ICON_IMAGE#,
+			#CONTENT_TITLE#,
+			#CONTENT_TEXT#,
+			#SUB_TEXT#,
+			#LANDING_TYPE_CD#,
+			#LANDING_TYPE_URL#,
+			#AND_RUN_URL#,
+			#TST_DL_URL#,
+			#MAR_DL_URL#,
+			#ALT_URL#)
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+
+	<insert id="insertCreativeImage" parameterClass="creative_vo">
+		insert into `ps_svc_creative_image`
+			(`TICKET_TEXT`,
+			`BANNER_IMAGE`,
+			`LANDING_TYPE_CD`,
+			`LANDING_TYPE_URL`,
+			`AND_RUN_URL`,
+			`TST_DL_URL`,
+			`MAR_DL_URL`,
+			`ALT_URL`)
+		values
+			(#TICKET_TEXT#,
+			#BANNER_IMAGE#,
+			#LANDING_TYPE_CD#,
+			#LANDING_TYPE_URL#,
+			#AND_RUN_URL#,
+			#TST_DL_URL#,
+			#MAR_DL_URL#,
+			#ALT_URL#)
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+
+	<insert id="insertCreativePopupTextBanner" parameterClass="creative_vo">
+		insert into `PS_SVC_CREATIVE_POPUP_TEXT_BANNER`
+			(`TICKET_TEXT`,
+			`LARGE_ICON_IMAGE`,
+		    `CONTENT_TITLE`,
+		    `CONTENT_TEXT`,
+			`POPUP_TITLE`,
+			`POPUP_CONTENT_TEXT`,
+			`LANDING_BUTTON_TITLE`,
+			`LANDING_TYPE_CD`,
+			`LANDING_TYPE_URL`,
+			`AND_RUN_URL`,
+			`TST_DL_URL`,
+			`MAR_DL_URL`,
+			`ALT_URL`)
+		values
+			(#TICKET_TEXT#,
+			#LARGE_ICON_IMAGE#,
+			#CONTENT_TITLE#,
+			#CONTENT_TEXT#,
+			#POPUP_TITLE#,
+			#POPUP_CONTENT_TEXT#,
+			#LANDING_BUTTON_TITLE#,
+			#LANDING_TYPE_CD#,
+			#LANDING_TYPE_URL#,
+			#AND_RUN_URL#,
+			#TST_DL_URL#,
+			#MAR_DL_URL#,
+			#ALT_URL#);
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+
+	<insert id="insertCreativePopupText" parameterClass="creative_vo">
+		insert into `ps_svc_creative_popup_text`
+			(`TICKET_TEXT`,
+			`POPUP_TITLE`,
+			`POPUP_CONTENT_TEXT`,
+			`LANDING_BUTTON_TITLE`,
+			`LANDING_TYPE_CD`,
+			`LANDING_TYPE_URL`,
+			`AND_RUN_URL`,
+			`TST_DL_URL`,
+			`MAR_DL_URL`,
+			`ALT_URL`)
+		values
+			(#TICKET_TEXT#,
+			#POPUP_TITLE#,
+			#POPUP_CONTENT_TEXT#,
+			#LANDING_BUTTON_TITLE#,
+			#LANDING_TYPE_CD#,
+			#LANDING_TYPE_URL#,
+			#AND_RUN_URL#,
+			#TST_DL_URL#,
+			#MAR_DL_URL#,
+			#ALT_URL#);
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+
+	<insert id="insertCreativePopupImageBanner" parameterClass="creative_vo">
+		insert into `ps_svc_creative_popup_image_banner`
+			(`TICKET_TEXT`,
+			`LARGE_ICON_IMAGE`,
+			`CONTENT_TITLE`,
+			`CONTENT_TEXT`,
+			`POPUP_IMAGE`,
+			`LANDING_BUTTON_TITLE`,
+			`LANDING_TYPE_CD`,
+			`LANDING_TYPE_URL`,
+			`AND_RUN_URL`,
+			`TST_DL_URL`,
+			`MAR_DL_URL`,
+			`ALT_URL`)
+		values
+			(#TICKET_TEXT#,
+			#LARGE_ICON_IMAGE#,
+			#CONTENT_TITLE#,
+			#CONTENT_TEXT#,
+			#POPUP_IMAGE#,
+			#LANDING_BUTTON_TITLE#,
+			#LANDING_TYPE_CD#,
+			#LANDING_TYPE_URL#,
+			#AND_RUN_URL#,
+			#TST_DL_URL#,
+			#MAR_DL_URL#,
+			#ALT_URL#);
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+
+	<insert id="insertCreativePopupImage" parameterClass="creative_vo">
+			insert into `ps_svc_creative_popup_image`
+				(`TICKET_TEXT`,
+				`POPUP_IMAGE`,
+				`LANDING_BUTTON_TITLE`,
+				`LANDING_TYPE_CD`,
+				`LANDING_TYPE_URL`,
+				`AND_RUN_URL`,
+				`TST_DL_URL`,
+				`MAR_DL_URL`,
+				`ALT_URL`)
+			values
+				(#TICKET_TEXT#,
+				#POPUP_IMAGE#,
+				#LANDING_BUTTON_TITLE#,
+				#LANDING_TYPE_CD#,
+				#LANDING_TYPE_URL#,
+				#AND_RUN_URL#,
+				#TST_DL_URL#,
+				#MAR_DL_URL#,
+				#ALT_URL#);
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+	
+	<insert id="insertCreativeJbDefault" parameterClass="creative_vo">
+		insert into `ps_svc_creative_jb_default`
+			(`TICKET_TEXT`,
+			`LARGE_ICON_IMAGE`,
+			`CONTENT_TITLE`,
+			`CONTENT_TEXT`,
+			`SUMMARY_TEXT`,
+			`LANDING_TYPE_CD`,
+			`LANDING_TYPE_URL`,
+			`AND_RUN_URL`,
+			`TST_DL_URL`,
+			`MAR_DL_URL`,
+			`ALT_URL`,
+			`ACTION1_LANDING_TYPE_CD`,
+			`ACTION1_TEXT`,
+			`ACTION1_LANDING_TYPE_URL`,
+			`ACTION1_AND_RUN_URL`,
+			`ACTION1_TST_DL_URL`,
+			`ACTION1_MAR_DL_URL`,
+			`ACTION1_ALT_URL`,
+			`ACTION2_LANDING_TYPE_CD`,
+			`ACTION2_TEXT`,
+			`ACTION2_LANDING_TYPE_URL`,
+			`ACTION2_AND_RUN_URL`,
+			`ACTION2_TST_DL_URL`,
+			`ACTION2_MAR_DL_URL`,
+			`ACTION2_ALT_URL`,
+			`ACTION3_LANDING_TYPE_CD`,
+			`ACTION3_TEXT`,
+			`ACTION3_LANDING_TYPE_URL`,
+			`ACTION3_AND_RUN_URL`,
+			`ACTION3_TST_DL_URL`,
+			`ACTION3_MAR_DL_URL`,
+			`ACTION3_ALT_URL`)
+		values
+			(#TICKET_TEXT#,
+			#LARGE_ICON_IMAGE#,
+			#CONTENT_TITLE#,
+			#CONTENT_TEXT#,
+			#SUMMARY_TEXT#,
+			#LANDING_TYPE_CD#,
+			#LANDING_TYPE_URL#,
+			#AND_RUN_URL#,
+			#TST_DL_URL#,
+			#MAR_DL_URL#,
+			#ALT_URL#,
+			#ACTION1_LANDING_TYPE_CD#,
+			#ACTION1_TEXT#,
+			#ACTION1_LANDING_TYPE_URL#,
+			#ACTION1_AND_RUN_URL#,
+			#ACTION1_TST_DL_URL#,
+			#ACTION1_MAR_DL_URL#,
+			#ACTION1_ALT_URL#,
+			#ACTION2_LANDING_TYPE_CD#,
+			#ACTION2_TEXT#,
+			#ACTION2_LANDING_TYPE_URL#,
+			#ACTION2_AND_RUN_URL#,
+			#ACTION2_TST_DL_URL#,
+			#ACTION2_MAR_DL_URL#,
+			#ACTION2_ALT_URL#,
+			#ACTION3_LANDING_TYPE_CD#,
+			#ACTION3_TEXT#,
+			#ACTION3_LANDING_TYPE_URL#,
+			#ACTION3_AND_RUN_URL#,
+			#ACTION3_TST_DL_URL#,
+			#ACTION3_MAR_DL_URL#,
+			#ACTION3_ALT_URL#)
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+
+	<insert id="insertCreativeJbBigText" parameterClass="creative_vo">
+		insert into `ps_svc_creative_jb_big_text`
+			(`TICKET_TEXT`,
+			`LARGE_ICON_IMAGE`,
+			`CONTENT_TITLE`,
+			`CONTENT_TEXT`,
+			`SUB_TEXT`,
+			`SUMMARY_TEXT`,
+			`LANDING_TYPE_CD`,
+			`LANDING_TYPE_URL`,
+			`AND_RUN_URL`,
+			`TST_DL_URL`,
+			`MAR_DL_URL`,
+			`ALT_URL`,
+			`ACTION1_LANDING_TYPE_CD`,
+			`ACTION1_TEXT`,
+			`ACTION1_LANDING_TYPE_URL`,
+			`ACTION1_AND_RUN_URL`,
+			`ACTION1_TST_DL_URL`,
+			`ACTION1_MAR_DL_URL`,
+			`ACTION1_ALT_URL`,
+			`ACTION2_LANDING_TYPE_CD`,
+			`ACTION2_TEXT`,
+			`ACTION2_LANDING_TYPE_URL`,
+			`ACTION2_AND_RUN_URL`,
+			`ACTION2_TST_DL_URL`,
+			`ACTION2_MAR_DL_URL`,
+			`ACTION2_ALT_URL`,
+			`ACTION3_LANDING_TYPE_CD`,
+			`ACTION3_TEXT`,
+			`ACTION3_LANDING_TYPE_URL`,
+			`ACTION3_AND_RUN_URL`,
+			`ACTION3_TST_DL_URL`,
+			`ACTION3_MAR_DL_URL`,
+			`ACTION3_ALT_URL`)
+		values
+			(#TICKET_TEXT#,
+			#LARGE_ICON_IMAGE#,
+			#CONTENT_TITLE#,
+			#CONTENT_TEXT#,
+			#SUB_TEXT#,
+			#SUMMARY_TEXT#,
+			#LANDING_TYPE_CD#,
+			#LANDING_TYPE_URL#,
+			#AND_RUN_URL#,
+			#TST_DL_URL#,
+			#MAR_DL_URL#,
+			#ALT_URL#,
+			#ACTION1_LANDING_TYPE_CD#,
+			#ACTION1_TEXT#,
+			#ACTION1_LANDING_TYPE_URL#,
+			#ACTION1_AND_RUN_URL#,
+			#ACTION1_TST_DL_URL#,
+			#ACTION1_MAR_DL_URL#,
+			#ACTION1_ALT_URL#,
+			#ACTION2_LANDING_TYPE_CD#,
+			#ACTION2_TEXT#,
+			#ACTION2_LANDING_TYPE_URL#,
+			#ACTION2_AND_RUN_URL#,
+			#ACTION2_TST_DL_URL#,
+			#ACTION2_MAR_DL_URL#,
+			#ACTION2_ALT_URL#,
+			#ACTION3_LANDING_TYPE_CD#,
+			#ACTION3_TEXT#,
+			#ACTION3_LANDING_TYPE_URL#,
+			#ACTION3_AND_RUN_URL#,
+			#ACTION3_TST_DL_URL#,
+			#ACTION3_MAR_DL_URL#,
+			#ACTION3_ALT_URL#)
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+
+	<insert id="insertCreativeJbInBox" parameterClass="creative_vo">
+		insert into `ps_svc_creative_jb_inbox`
+			(`TICKET_TEXT`,
+			`LARGE_ICON_IMAGE`,
+			`CONTENT_TITLE`,
+			`CONTENT_TEXT`,
+			`INBOX_TEXT_LINE_1`,
+			`INBOX_TEXT_LINE_2`,
+			`INBOX_TEXT_LINE_3`,
+			`INBOX_TEXT_LINE_4`,
+			`INBOX_TEXT_LINE_5`,
+			`INBOX_TEXT_LINE_6`,
+			`INBOX_TEXT_LINE_7`,
+			`SUMMARY_TEXT`,
+			`LANDING_TYPE_CD`,
+			`LANDING_TYPE_URL`,
+			`AND_RUN_URL`,
+			`TST_DL_URL`,
+			`MAR_DL_URL`,
+			`ALT_URL`,
+			`ACTION1_LANDING_TYPE_CD`,
+			`ACTION1_TEXT`,
+			`ACTION1_LANDING_TYPE_URL`,
+			`ACTION1_AND_RUN_URL`,
+			`ACTION1_TST_DL_URL`,
+			`ACTION1_MAR_DL_URL`,
+			`ACTION1_ALT_URL`,
+			`ACTION2_LANDING_TYPE_CD`,
+			`ACTION2_TEXT`,
+			`ACTION2_LANDING_TYPE_URL`,
+			`ACTION2_AND_RUN_URL`,
+			`ACTION2_TST_DL_URL`,
+			`ACTION2_MAR_DL_URL`,
+			`ACTION2_ALT_URL`,
+			`ACTION3_LANDING_TYPE_CD`,
+			`ACTION3_TEXT`,
+			`ACTION3_LANDING_TYPE_URL`,
+			`ACTION3_AND_RUN_URL`,
+			`ACTION3_TST_DL_URL`,
+			`ACTION3_MAR_DL_URL`,
+			`ACTION3_ALT_URL`)
+		values
+			(#TICKET_TEXT#,
+			#LARGE_ICON_IMAGE#,
+			#CONTENT_TITLE#,
+			#CONTENT_TEXT#,
+			#INBOX_TEXT_LINE_1#,
+			#INBOX_TEXT_LINE_2#,
+			#INBOX_TEXT_LINE_3#,
+			#INBOX_TEXT_LINE_4#,
+			#INBOX_TEXT_LINE_5#,
+			#INBOX_TEXT_LINE_6#,
+			#INBOX_TEXT_LINE_7#,
+			#SUMMARY_TEXT#,
+			#LANDING_TYPE_CD#,
+			#LANDING_TYPE_URL#,
+			#AND_RUN_URL#,
+			#TST_DL_URL#,
+			#MAR_DL_URL#,
+			#ALT_URL#,
+			#ACTION1_LANDING_TYPE_CD#,
+			#ACTION1_TEXT#,
+			#ACTION1_LANDING_TYPE_URL#,
+			#ACTION1_AND_RUN_URL#,
+			#ACTION1_TST_DL_URL#,
+			#ACTION1_MAR_DL_URL#,
+			#ACTION1_ALT_URL#,
+			#ACTION2_LANDING_TYPE_CD#,
+			#ACTION2_TEXT#,
+			#ACTION2_LANDING_TYPE_URL#,
+			#ACTION2_AND_RUN_URL#,
+			#ACTION2_TST_DL_URL#,
+			#ACTION2_MAR_DL_URL#,
+			#ACTION2_ALT_URL#,
+			#ACTION3_LANDING_TYPE_CD#,
+			#ACTION3_TEXT#,
+			#ACTION3_LANDING_TYPE_URL#,
+			#ACTION3_AND_RUN_URL#,
+			#ACTION3_TST_DL_URL#,
+			#ACTION3_MAR_DL_URL#,
+			#ACTION3_ALT_URL#)
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+
+	<insert id="insertCreativeJbBigPicture" parameterClass="creative_vo">
+		insert into `ps_svc_creative_jb_big_picture`
+			(`TICKET_TEXT`,
+			`LARGE_ICON_IMAGE`,
+			`CONTENT_TITLE`,
+			`CONTENT_TEXT`,
+			`SUMMARY_TEXT`,
+			`BANNER_IMAGE`,
+			`LANDING_TYPE_CD`,
+			`LANDING_TYPE_URL`,
+			`AND_RUN_URL`,
+			`TST_DL_URL`,
+			`MAR_DL_URL`,
+			`ALT_URL`,
+			`ACTION1_LANDING_TYPE_CD`,
+			`ACTION1_TEXT`,
+			`ACTION1_LANDING_TYPE_URL`,
+			`ACTION1_AND_RUN_URL`,
+			`ACTION1_TST_DL_URL`,
+			`ACTION1_MAR_DL_URL`,
+			`ACTION1_ALT_URL`,
+			`ACTION2_LANDING_TYPE_CD`,
+			`ACTION2_TEXT`,
+			`ACTION2_LANDING_TYPE_URL`,
+			`ACTION2_AND_RUN_URL`,
+			`ACTION2_TST_DL_URL`,
+			`ACTION2_MAR_DL_URL`,
+			`ACTION2_ALT_URL`,
+			`ACTION3_LANDING_TYPE_CD`,
+			`ACTION3_TEXT`,
+			`ACTION3_LANDING_TYPE_URL`,
+			`ACTION3_AND_RUN_URL`,
+			`ACTION3_TST_DL_URL`,
+			`ACTION3_MAR_DL_URL`,
+			`ACTION3_ALT_URL`)
+		values
+			(#TICKET_TEXT#,
+			#LARGE_ICON_IMAGE#,
+			#CONTENT_TITLE#,
+			#CONTENT_TEXT#,
+			#SUMMARY_TEXT#,
+			#BANNER_IMAGE#,
+			#LANDING_TYPE_CD#,
+			#LANDING_TYPE_URL#,
+			#AND_RUN_URL#,
+			#TST_DL_URL#,
+			#MAR_DL_URL#,
+			#ALT_URL#,
+			#ACTION1_LANDING_TYPE_CD#,
+			#ACTION1_TEXT#,
+			#ACTION1_LANDING_TYPE_URL#,
+			#ACTION1_AND_RUN_URL#,
+			#ACTION1_TST_DL_URL#,
+			#ACTION1_MAR_DL_URL#,
+			#ACTION1_ALT_URL#,
+			#ACTION2_LANDING_TYPE_CD#,
+			#ACTION2_TEXT#,
+			#ACTION2_LANDING_TYPE_URL#,
+			#ACTION2_AND_RUN_URL#,
+			#ACTION2_TST_DL_URL#,
+			#ACTION2_MAR_DL_URL#,
+			#ACTION2_ALT_URL#,
+			#ACTION3_LANDING_TYPE_CD#,
+			#ACTION3_TEXT#,
+			#ACTION3_LANDING_TYPE_URL#,
+			#ACTION3_AND_RUN_URL#,
+			#ACTION3_TST_DL_URL#,
+			#ACTION3_MAR_DL_URL#,
+			#ACTION3_ALT_URL#)
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+	
+	<delete id="deleteCreativeText" parameterClass="">
+		delete from PS_SVC_CREATIVE_TEXT where CREATIVE_SQ = #creative_sq#;
+	</delete>
+
+	<delete id="deleteCreativeImage" parameterClass="">
+		delete from PS_SVC_CREATIVE_IMAGE where CREATIVE_SQ = #creative_sq#;
+	</delete>
+
+	<delete id="deleteCreativePopupTextBanner" parameterClass="">
+		delete from PS_SVC_CREATIVE_POPUP_TEXT_BANNER where CREATIVE_SQ = #creative_sq#;
+	</delete>
+
+	<delete id="deleteCreativePopupText" parameterClass="">
+		delete from PS_SVC_CREATIVE_POPUP_TEXT where CREATIVE_SQ = #creative_sq#;
+	</delete>
+
+	<delete id="deleteCreativePopupImageBanner" parameterClass="">
+		delete from PS_SVC_CREATIVE_POPUP_IMAGE_BANNER where CREATIVE_SQ = #creative_sq#;
+	</delete>
+
+	<delete id="deleteCreativePopupImage" parameterClass="">
+		delete from PS_SVC_CREATIVE_POPUP_IMAGE where CREATIVE_SQ = #creative_sq#;
+	</delete>
+
+	<delete id="deleteCreativeJbDefault" parameterClass="">
+		delete from PS_SVC_CREATIVE_JB_DEFAULT where CREATIVE_SQ = #creative_sq#;
+	</delete>
+
+	<delete id="deleteCreativeJbBigText" parameterClass="">
+		delete from PS_SVC_CREATIVE_JB_BIG_TEXT where CREATIVE_SQ = #creative_sq#;
+	</delete>
+
+	<delete id="deleteCreativeJbInBox" parameterClass="">
+		delete from PS_SVC_CREATIVE_JB_INBOX where CREATIVE_SQ = #creative_sq#;
+	</delete>
+
+	<delete id="deleteCreativeJbBigPicture" parameterClass="">
+		delete from PS_SVC_CREATIVE_JB_BIG_PICTURE where CREATIVE_SQ = #creative_sq#;
+	</delete>
+</sqlMap>

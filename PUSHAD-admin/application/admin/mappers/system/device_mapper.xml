@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="device">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="deviceListResult" class="device_vo" />
+	
+	<!-- Q U E R I E S -->
+	
+	<select id="countSelectList" parameterClass="array">
+		SELECT 
+			COUNT(*)
+		FROM 
+			tad3.poc_device_list DL 
+		JOIN 
+			tad3.poc_code PCT ON DL.device_type_cd = PCT.att
+		JOIN 
+			tad3.poc_code PCM ON DL.maker_cd = PCM.att
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				DL.release_ym >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= DL.release_ym
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="device" prepend="AND">
+					DL.brand_nm like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="maker" prepend="AND">
+					PCM.name like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="model" prepend="AND">
+					DL.inapp_model_nm like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="device_type" prepend="AND">
+					PCT.name like '%$search_values$%'
+				</isEqual>
+			</isNotEmpty>			
+		</dynamic>
+	</select>
+	
+	<select id="selectList" parameterClass="array" resultMap="deviceListResult">
+		SELECT 
+			DL.device_sq, 
+			PCT.name AS device_type_nm, 
+			PCM.name as maker_nm,
+			DL.brand_nm,
+			DL.inapp_model_nm AS model_nm,
+			CONCAT(SUBSTR(DL.release_ym, 1,4),'.',SUBSTR(DL.release_ym, 5,6)) AS release_dt,
+			DATE_FORMAT(DL.create_dt, '%Y.%m.%d') AS create_dt
+		FROM 
+			tad3.poc_device_list DL 
+		JOIN 
+			tad3.poc_code PCT ON DL.device_type_cd = PCT.att
+		JOIN 
+			tad3.poc_code PCM ON DL.maker_cd = PCM.att
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				DL.release_ym >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= DL.release_ym
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="device" prepend="AND">
+					DL.brand_nm like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="maker" prepend="AND">
+					PCM.name like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="model" prepend="AND">
+					DL.inapp_model_nm like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="device_type" prepend="AND">
+					PCT.name like '%$search_values$%'
+				</isEqual>
+			</isNotEmpty>			
+		</dynamic>
+		ORDER BY DL.device_sq desc
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+	
+	<select id="selectDeviceDetail" parameterClass="array" resultMap="deviceListResult">
+		SELECT 
+			DL.device_sq, 
+			PCT.name AS device_type_nm, 
+			PCM.name as maker_nm,
+			DL.brand_nm,
+			DL.inapp_model_nm AS model_nm,
+			CONCAT(SUBSTR(DL.release_ym, 1,4),'.',SUBSTR(DL.release_ym, 5,6)) AS release_dt,
+			DATE_FORMAT(DL.create_dt, '%Y.%m.%d') AS create_dt
+		FROM 
+			tad3.poc_device_list DL 
+		JOIN 
+			tad3.poc_code PCT ON DL.device_type_cd = PCT.att
+		JOIN 
+			tad3.poc_code PCM ON DL.maker_cd = PCM.att
+		WHERE 
+			DL.device_sq = #device_sq#;
+	
+	</select>
+</sqlMap>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="inventory">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="inventorySummaryResult" class="" />
+
+	<resultMap id="inventoryListResult" class="" />
+	
+	<!-- Q U E R I E S -->
+
+	<select id="selectInventorySummary" parameterClass="array" resultMap="inventorySummaryResult">
+		select
+			sum(if(PSA.AD_STATUS_CD = @ad_status_stand@ or PSA.AD_STATUS_CD = @ad_status_send@, PSA.PUSH_BOOKING_CNT, 0)) as TOT_PUSH_BOOKING_CNT,
+			sum(if(PSA.AD_STATUS_CD = @ad_status_com@, PSA.PUSH_BOOKING_CNT, 0)) as TOT_REQUEST_CNT
+		from
+			PS_SVC_AD PSA
+		where
+			PSA.AD_STATUS_CD in (@ad_status_stand@, @ad_status_send@, @ad_status_com@)
+			and PSA.START_DT >= #start_dt#
+			and #end_dt# >= PSA.START_DT; 
+	</select>
+	
+	<select id="selectInventoryList" parameterClass="array" resultMap="inventoryListResult">
+		select
+			CAL.REPORT_DT as START_DT,
+			sum(if(PSA.AD_STATUS_CD = @ad_status_stand@ or PSA.AD_STATUS_CD = @ad_status_send@, 1, 0)) as AD_CNT,
+			sum(if(PSA.AD_STATUS_CD = @ad_status_stand@ or PSA.AD_STATUS_CD = @ad_status_send@, PSA.PUSH_BOOKING_CNT, 0)) as PUSH_BOOKING_CNT,
+			sum(if(PSA.AD_STATUS_CD = @ad_status_com@, PSA.PUSH_BOOKING_CNT, 0)) as REQUEST_CNT
+		from
+			TMP_CALENDAR CAL
+		left join
+			PS_SVC_AD PSA on date_format(PSA.START_DT, '%Y-%m-%d') = CAL.REPORT_DT
+		where
+			CAL.REPORT_DT >= #start_dt#
+			and #end_dt# >= CAL.REPORT_DT
+		group by
+			CAL.REPORT_DT
+		order by 
+			CAL.REPORT_DT;
+	</select>
+
+</sqlMap>

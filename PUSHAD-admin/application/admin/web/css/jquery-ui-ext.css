@@ -1,0 +1,4 @@
+@charset "utf-8";
+
+.ui-selectable .ui-selecting { background: #FECA40; }
+.ui-selectable .ui-selected { background: #F39814; }

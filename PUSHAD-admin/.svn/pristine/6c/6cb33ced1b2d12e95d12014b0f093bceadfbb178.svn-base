@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="carrier">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="carrierListResult" class="statistics_vo" />
+	
+	<!-- Q U E R I E S -->
+	<select id="selectList" parameterClass="array" resultMap="carrierListResult">
+		SELECT 
+			A.carrier_nm, 
+			IFNULL(B.request_cnt, 0) AS request_cnt, 
+			IFNULL(B.success_cnt, 0) AS success_cnt, 
+			IFNULL(B.click_cnt, 0) AS click_cnt,  
+			IFNULL(ROUND(B.success_cnt / B.request_cnt * 100, 2), 0) AS success_rate,  
+			IFNULL(ROUND(B.click_cnt / B.success_cnt *100, 2), 0) AS click_rate 
+		FROM
+			(SELECT name AS carrier_nm FROM tad3.poc_code WHERE ent = 'CARIER') A
+		LEFT JOIN
+			(SELECT CASE WHEN RC.carrier IN ($skt_value$) THEN 'SKT'
+				WHEN RC.carrier IN ($kt_value$) THEN 'KT'
+				WHEN RC.carrier IN ($lgu_value$) THEN 'LGU+'
+				ELSE 'ETC'
+				END AS carrier_nm, 
+				RC.report_dt AS start_dt, 
+				SUM(RC.request_cnt) AS request_cnt, 
+				SUM(RC.success_cnt) AS success_cnt, 
+				SUM(RC.web_click_cnt + RC.and_run_click_cnt + RC.ios_run_click_cnt + RC.tst_dl_click_cnt + RC.mar_dl_click_cnt + RC.itu_dl_click_cnt + RC.alt_click_cnt) AS click_cnt
+		FROM PS_RPT_CARRIER RC
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="start_dt" prepend="AND">
+				RC.report_dt BETWEEN #start_dt# AND #end_dt# 
+			</isNotEmpty>
+		</dynamic>
+		GROUP BY carrier_nm) B ON A.carrier_nm = B.carrier_nm;
+	</select>
+</sqlMap>

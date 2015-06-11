@@ -1,0 +1,235 @@
+@charset "utf-8";
+/*Reset*/
+*{margin:0;padding:0}
+body{ background-color:#fff;*word-break:break-all;-ms-word-break:break-all;font-family:돋움, 돋움체, sans-serif;font-size:12px;}
+body,input,button{font-size:12px;line-height:1.5em;font-family:"",Dotum,Helvetica,AppleGothic,Sans-serif;color:#383d41}
+h1,h2,h3,h4,h5,h6{font-size:12px;text-align:left}
+img,fieldset,iframe{border:0 none; vertical-align:bottom}
+input{vertical-align:middle;margin:0 2px 0 2px; border:1px solid #CBCBCB}
+input.clear{border:none}
+select{vertical-align:middle;}
+li{list-style:none}
+em,address{font-style:normal}
+button,label{cursor:pointer;_cursor /**/:hand}
+button *{position:relative}
+button img{left:-3px;*left:auto}
+textarea{overflow:auto}
+html:first-child select{height:20px;padding-right:6px}
+option{padding-right:6px}
+a{color:#2f3743;text-decoration:none}
+a:hover{color:#390;text-decoration:none}
+hr{ display:none}
+caption, legend {display:none; }
+.clear{ clear:both}
+.yNone{ border:0}
+/*̺⺻*/
+table {border-collapse:collapse; word-break:break-all;}
+td a:link {text-decoration:none; color:#707070;}
+td a:visited {text-decoration:none;	color:#525252;}
+td a:hover {color:#ff2d3a;}
+td img {vertical-align:middle;	padding-left:3px;}
+td input {border-width:1; border:1px solid #ccced7;	padding:1px 2px 3px;}
+td select {margin-top:0px;	vertical-align:center;	font-size:11px;	line-spacing:-1; color:#525252;}
+td textarea {border-width:1; border:1px solid #ccced7;}
+td p {padding-top:3px;}
+
+.invisible {visibility:hidden; position:absolute; left:-10000px; top:0; height:0 !important; font-size:0 !important; line-height:0 !important; }
+
+
+
+/*-----------------------------------------------------------------------------------
+	2012-10-10 추가 사항
+-----------------------------------------------------------------------------------
+	MARGIN PADDIN 
+-----------------------------------------------------------------------------------*/
+.mg_b00 { margin-bottom:0px !important;}
+.mg_b05 { margin-bottom:5px !important;}
+.mg_b10 { margin-bottom:10px !important;}
+.mg_b15 { margin-bottom:15px !important;}
+.mg_b20 { margin-bottom:20px !important;}
+.mg_b25 { margin-bottom:25px !important;}
+.mg_b30 { margin-bottom:30px !important;}
+
+.mg_l00 { margin-left:0px !important;}
+.mg_l03 { margin-left:3px !important;}
+.mg_l05 { margin-left:5px !important;}
+.mg_l10 { margin-left:10px !important;}
+.mg_l15 { margin-left:15px !important;}
+.mg_l20 { margin-left:20px !important;}
+
+.mg_r00 { margin-right:0px !important;}
+.mg_r03 { margin-right:3px !important;}
+.mg_r05 { margin-right:5px !important;}
+.mg_r10 { margin-right:10px !important;}
+.mg_r20 { margin-right:20px !important;}
+
+.mg_t00 { margin-top:0px !important;}
+.mg_t03 { margin-top:3px !important;}
+.mg_t05 { margin-top:5px !important;}
+.mg_t10 { margin-top:10px !important;}
+.mg_t15 { margin-top:15px !important;}
+.mg_t20 { margin-top:20px !important;}
+.mg_t30 { margin-top:30px !important;}
+.mg_t40 { margin-top:40px !important;}
+.mg_t50 { margin-top:50px !important;}
+
+.pd_t00 { padding-top:0px !important;}
+
+
+.h_50 { height:50px !important;}
+.h_100 { height:100px !important;}
+.h_150 { height:150px !important;}
+.h_200 { height:200px !important;}
+.h_250 { height:250px !important;}
+.h_300 { height:300px !important;}
+
+
+.scrollBox { width:100%; height:130px; overflow-y:scroll;}
+
+.overflow { overflow:hidden; width:100%;}
+.textLeft {text-align:left !important; }
+.textRight {text-align:right !important;}
+.textCenter {text-align:center !important;}
+.point01 { color:red !important;}
+.textArea{width:90%;height:100%;}
+.border{border:1px solid #ccced7;}
+.td_notice { color:#999 !important; margin:0 0 0 10px;}
+
+.btnListArea { width:100%; overflow:hidden;}
+.in_title { padding-left:10px; background:url('/web/images/common/bul_sqr.gif') no-repeat left 9px; vertical-align:middle; margin:0 5px 0 0;}
+.in_title02 { padding-left:10px; background:url('/web/images/common/bul_sqr.gif') no-repeat left 6px; vertical-align:middle; margin:0 5px 0 0;}
+
+.inline {display:inline-block !important;}
+
+input.textType { border:1px solid #abadb3; padding:3px 5px 1px 5px; background-color:#fff; color:#969287; font-size:12px; line-height:11px;}
+#content .searchArea { position:relative; overflow:hidden; margin-bottom:10px; border:1px solid #ccc; padding:10px 5px; background:#fff; }
+#content .searchArea .title { padding-left:10px; background:url('/web/images/common/bul_sqr.gif') no-repeat left 6px; vertical-align:middle; display:inline-block; margin:0 5px 0 0; vertical-align:middle;}
+#content .searchArea img { vertical-align:middle;}
+
+#content .searchArea02 { position:relative; overflow:hidden; margin-bottom:10px;}
+#content .searchArea02 .title { padding-left:10px; background:url('/web/images/common/bul_sqr.gif') no-repeat left 6px; vertical-align:middle; display:inline-block; margin:0 5px 0 0;}
+#content .searchArea02 img { vertical-align:middle;}
+
+.n_class { float:left; overflow:hidden; }
+.oneLine { overflow:hidden; margin-bottom:5px;}
+
+.n_search { float:right; vertical-align:top; overflow:hidden;}
+.n_search .title { padding-top:1px; vertical-align:middle; background-position:left 7px !important;}
+
+.dotLine { width:100%; overflow:hidden; height:2px; clear:both; border-bottom:1px dashed #999; margin-bottom:20px;}
+a.linkStyle { color:#226ab3 !important;}
+a.linkStyle:hover { text-decoration:underline;}
+
+
+/* 레이어 팝업 */
+.layerPopup { border:2px solid #b11129; padding:13px 10px 10px; background:#fff; width:200px; position:absolute; left:35%; top:50%; }
+.layerPopup .text { text-align:center;}
+.layerPopup .btn { margin-top:15px; text-align:center;}
+.layerPopup02 { border:2px solid #b11129; padding:25px 10px 20px; background:#fff; width:300px;position:absolute; left:35%; top:50%; }
+.layerPopup02 .text { text-align:center;}
+.layerPopup02 .text span{font-size:10px;}
+.layerPopup02 .btn { margin-top:15px; text-align:center;}
+.tableScroll{overflow-y:scroll;height:200px;}
+
+.n_notice { width:100%; margin-top:10px;}
+.n_notice li { background:url('/web/images/common/bul_arr.gif') no-repeat left 4px; padding-left:10px; margin-bottom:5px;}
+.n_notice li ol li { background:none; padding-left:0px; margin-bottom:0px;}
+
+.ulList { width:100%; margin-top:10px;}
+.ulList li { font-size:11px; margin-bottom:3px !important;}
+.ulList li span.blt { font-size:12px;}
+
+
+
+/* 2012-12-13 추가 */
+.landingBox { width:100%; margin-top:10px; overflow:hidden;}
+.landingBox dt { width:20%; float:left; text-align:center; margin-bottom:3px;}
+.landingBox dd { width:80%; float:left;  margin-bottom:3px;}
+
+
+
+/* 2013-08-19 추가 */
+span.dataResult{margin-right:10px}
+span.dataResult strong{font-weight:bold;color:red}
+strong.counting{font-weight:normal;color:red}
+strong.important{font-weight:normal;color:red}
+table.txtC th, table.txtC td{text-align:center}
+table.txtC td a{text-decoration:underline;color:blue}
+.txt12{font-size:12px}
+.areaSelect{float:left;margin-right:5px;margin-top:10px;width:60%;height:140px;overflow-y:scroll;border:1px solid #d0d0d0}
+p.btnAreaDel{float:left;margin-top:10px}
+p.areaSelInfo{clear:both;padding-top:6px}
+.tagetSetting{width:100%;margin-bottom:10px}
+.tagetSetting:after{content:"";display:block;clear:both}
+.settingList{float:left;width:80%;height:210px;margin-right:5px;overflow-y:scroll;border:1px solid #d0d0d0}
+.settingList p{text-align:center;padding:2px 0}
+.settingList p.operator{color:red;font-weight:bold;background:#61f0fd}
+.settingList p.sign{background:#fff10f}
+.tagetSettingBtn{float:left}
+.tagetSettingBtn a{display:inline-block;margin-bottom:5px}
+.contradictionView{width:100%}
+.contradictionView:after{content:"";display:block;clear:both}
+.contradictionBox{float:left;width:80%;height:38px;margin-right:5px;overflow-y:auto;border:1px solid #d0d0d0}
+.contradictionBox p{text-align:center;margin:10px 0}
+span.operator{font-weight:bold;color:red}
+.contradictionBox a{text-decoration:underline}
+.contradictionBox a:hover{color:blue}
+.red{color:red}
+.txtLine{text-decoration:underline}
+h5.materialTit{padding:0;margin:10px 0 5px 0;background:none}
+.infoZone{position:relative;display:inline;z-index:99;}
+.layerPopup_new { border:2px solid #b11129; padding:13px 10px 10px; background:#fff; width:200px; position:absolute; left:20px; top:0; }
+.layerPopup_new .text { text-align:center;}
+.layerPopup_new .btn { margin-top:15px; text-align:center;}
+.layerPopup_new2 { border:2px solid #b11129; padding:13px 10px 10px; background:#fff; width:200px; position:absolute; right:0; top:20px; }
+.layerPopup_new2 .text { text-align:center;}
+.layerPopup_new2 .btn { margin-top:15px; text-align:center;}
+table.popM th,table.popM td{padding:5px 0}
+table.popM div.portraitBox,table.popM div.landscapeBox{border:1px solid #000}
+.mdnArea{margin:20px auto}
+.mdnArea label{display:inline-block;width:20%;text-align:center}
+.mdnArea input{padding:3px}
+.mgT10{margin-top:10px}
+.calender_num a.on{color:red;text-decoration:underline}
+.calender_num a.ableOn{color:#000;text-decoration:underline}
+table.reportTable td.bgColor1{background:#fde337}
+table.reportTable tr.bgYellow td{background:#fde337}
+table.reportTable td.bgColor2{background:#07b6ff}
+table.reportTable td div.off a{color:#dcdbdb}
+table.reportTable td.bgTitle{background:#fde337;text-align:center;vertical-align:middle;font-weight:bold;font-size:12px;}
+table.txtCenter td{text-align:center;vertical-align:middle}
+table.txtCenter td a{text-decoration:underline;color:blue}
+.targetsetGroup{width:80%;float:left;margin-right:5px}
+.settingList2{width:100%;height:210px;margin-bottom:5px;overflow-y:scroll;border:1px solid #d0d0d0}
+.settingList2 p{text-align:center;padding:2px 0}
+.settingList2 p.operator{color:red;font-weight:bold;background:#61f0fd}
+.settingList2 p.sign{background:#fff10f}
+.contradictionBox2{width:100%;height:38px;margin-right:5px;overflow-y:auto;border:1px solid #d0d0d0}
+.contradictionBox2 p{text-align:center;margin:10px 0}
+.contradictionBox2 a{text-decoration:underline}
+.contradictionBox2 a:hover{color:blue}
+textarea.contArea{width:90%;height:200px;margin-top:10px}
+.txtLeft{text-align:left}
+.bold{font-weight:bold}
+a.clipboard{color:blue !important;text-decoration:underline !important}
+dl.payInfo{margin-top:20px}
+dl.payInfo dt{font-weight:bold;margin-bottom:5px}
+dl.payInfo dd{margin-left:10px}
+dl.payInfo dd li{text-indent:-8px;margin-left:8px}
+
+
+.popWrapper .popTitle{width:100%;height:30px;line-height:30px;text-align:center;background:#fde337;color:#000;}
+.popWrapper .popTitle strong{color:#c60303;text-decoration:underline;}
+.popWrapper .scrollArea p.title{width:100%;height:20px;line-height:20px;padding-top:5px;text-align:center;background:#3f3f3f;font-weight:bold;margin-top:10px;color:#fff;font-size:12px;}
+.popWrapper .scrollArea{width:100%;height:470px;overflow-y:scroll;}
+.popWrapper .tblCenter th,.popWrapper .tblCenter td{text-align:center;}
+.popWrapper .tblCenter td{color:#666}
+
+/* sorting Table용 css */
+table.sortTable thead tr .header {background-image: url(../../web/images/button/bg.gif);background-repeat: no-repeat;cursor: pointer;}
+table.sortTable thead tr .headerSortUp {background-image: url(../../web/images/button/asc.gif);}
+table.sortTable thead tr .headerSortDown {background-image: url(../../web/images/button/desc.gif);}
+
+.exelDown{width:100%;margin-top:20px;}
+.exelDown em{float:left}
+.exelDown a{float:right}

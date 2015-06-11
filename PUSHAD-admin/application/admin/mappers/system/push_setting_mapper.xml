@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pushSetting">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="frequencyResult" class="frequency_vo" />
+	
+	<!-- Q U E R I E S -->
+
+	<select id="selectFrequencyList" parameterClass="array" resultMap="frequencyResult">
+		select
+			PPF.FREQUENCY_SQ,
+			DATE_FORMAT(PPF.START_DT, '%Y-%m-%d') as START_DT,
+			PPF.CYCLE,
+			PPF.FREQUENCY_CNT,
+			PPF.CREATE_DT,
+			PPF.CREATE_ACCOUNT_SQ
+		from
+			PUSHAD.PS_POC_FREQUENCY PPF
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="start_dt" prepend="AND">
+				PPF.START_DT like '$start_dt$%'
+			</isNotEmpty>
+		</dynamic>
+		order by
+			PPF.START_DT desc
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+		;
+	</select>
+		
+	<select id="countFrequencyList" parameterClass="array" resultMap="">
+		select
+			count(*)
+		from
+			PUSHAD.PS_POC_FREQUENCY PPF;
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="start_dt" prepend="AND">
+				PPF.START_DT like '$start_dt$%'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<insert id="insertFrequency" parameterClass="array">
+		insert into PUSHAD.PS_POC_FREQUENCY 
+			(`START_DT`, 
+			`CYCLE`, 
+			`FREQUENCY_CNT`, 
+			`CREATE_DT`, 
+			`CREATE_ACCOUNT_SQ`)
+		values
+			(#start_dt#,
+			#cycle#,
+			#frequency_cnt#,
+			now(),
+			#create_account_sq#)
+		<selectKey resultClass="int" keyProperty="">
+ 				select LAST_INSERT_ID() AS id;
+		</selectKey>
+	</insert>
+</sqlMap>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="paramStatistics">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="paramListResult" class="statistics_vo" />
+	
+	<resultMap id="existYearResult" class="">
+	</resultMap>
+	<!-- Q U E R I E S -->
+	<select id="selectList" parameterClass="array" resultMap="paramListResult">
+		SELECT 
+			DATE_FORMAT(log_dt, '%Y.%m.%d') AS division_dt, param_cnt, variation_cnt 
+		FROM 
+			ps_svc_param_history
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				log_dt >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= log_dt
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY 
+			log_dt DESC
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+	
+	<select id="countSelectList" parameterClass="array" resultMap="">
+		SELECT 
+			COUNT(*)
+		FROM 
+			ps_svc_param_history
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				log_dt >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= log_dt
+			</isNotEmpty>
+		</dynamic>
+	</select>
+</sqlMap>

@@ -1,0 +1,25 @@
+@charset "utf-8";
+
+input.error,textarea.error {
+	border: 1px dashed red;
+}
+
+label.error {
+	margin-left: 10px;
+	color: red;
+}
+
+input.error,textarea.error {
+	border: 1px dashed red;
+}
+
+label.error {
+	padding-left: 5px;
+	display: inline;
+	color: red;
+}
+
+label.maxbytes-error {
+	display: inline;
+	color: red;
+}

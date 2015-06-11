@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pcpMediaReport">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="reportListResult" class="report_vo" />
+	
+	<!-- Q U E R I E S -->
+	
+	<select id="selectMediaReportList" parameterClass="array" resultMap="reportListResult">
+		SELECT 
+			PSM.MEDIA_ID,
+			PSM.MEDIA_NM, 
+			DATE_FORMAT(PSM.CREATE_DT, '%Y.%m.%d') as CREATE_DT,
+			STATUS.NAME as MEDIA_STATUS_NM,
+			CATEGORY.NAME as MEDIA_CATEGORY_NM,
+			(SELECT NAME FROM TAD3.POC_CODE WHERE ENT = 'OS' AND VALUE1 = PSM.MEDIA_OS_CD) as MEDIA_OS_NM,
+			PSM.MEDIA_KEY,
+			PSM.CREATE_DT,
+			sum(PRM.REQUEST_CNT) REQUEST_CNT,
+			sum(PRM.SUCCESS_CNT) SUCCESS_CNT,
+			sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) TOT_CLICK,
+			round(sum(PRM.SUCCESS_CNT) / sum(PRM.REQUEST_CNT) * 100,1) SUCCESS_PER,
+			round(sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) / sum(PRM.SUCCESS_CNT) * 100,1) CTR_CNT
+		FROM PUSHAD.PS_SVC_MEDIA PSM
+		JOIN 			PUSHAD.PS_RPT_MEDIA 		PRM 		ON PSM.MEDIA_ID = PRM.MEDIA_ID
+		LEFT JOIN 		TAD3.POC_CODE 				STATUS 		ON PSM.MEDIA_STATUS_CD = STATUS.ATT
+		LEFT JOIN 		TAD3.POC_CODE 				CATEGORY 	ON PSM.MEDIA_CATEGORY_CD = CATEGORY.ATT
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchStartDate" prepend="AND">
+				PSM.CREATE_DT >= '$searchStartDate$ 00:00:00'
+			</isNotEmpty>
+			<isNotEmpty property="searchEndDate" prepend="AND">
+		    	 '$searchEndDate$ 23:59:59' >= PSM.CREATE_DT
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="media_nm" prepend="AND">
+					PSM.MEDIA_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="app_id" prepend="AND">
+					PSM.MEDIA_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="" prepend="AND">
+						(PSM.MEDIA_NM like '%$search_value$%'
+							or PSM.MEDIA_NM like '%$search_value$%')
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="platform_type" prepend="AND">
+					PSM.MEDIA_OS_CD like '%$platform_type$%'
+			</isNotEmpty>
+			<isNotEmpty property="status_type" prepend="AND">
+					PSM.MEDIA_STATUS_CD like '%$status_type$%'
+			</isNotEmpty>
+			<isNotEmpty property="category_cd" prepend="AND">
+					PRM.MEDIA_CATEGORY_CD like '%$category_cd$%'
+			</isNotEmpty>
+		</dynamic> 
+		GROUP BY PSM.MEDIA_ID
+		ORDER BY PSM.CREATE_DT DESC
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+	
+	<select id="countMediaReportList" parameterClass="array" resultMap="">
+		SELECT 
+			count(distinct PSM.MEDIA_ID) as TOTAL_COUNT
+		FROM PUSHAD.PS_SVC_MEDIA PSM
+		JOIN 			PUSHAD.PS_RPT_MEDIA 		PRM 		ON PSM.MEDIA_ID = PRM.MEDIA_ID
+		LEFT JOIN 		TAD3.POC_CODE 				STATUS 		ON PSM.MEDIA_STATUS_CD = STATUS.ATT
+		LEFT JOIN 		TAD3.POC_CODE 				CATEGORY 	ON PSM.MEDIA_CATEGORY_CD = CATEGORY.ATT
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchStartDate" prepend="AND">
+				PSM.CREATE_DT >= '$searchStartDate$ 00:00:00'
+			</isNotEmpty>
+			<isNotEmpty property="searchEndDate" prepend="AND">
+		    	 '$searchEndDate$ 23:59:59' >= PSM.CREATE_DT
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="media_nm" prepend="AND">
+					PSM.MEDIA_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="app_id" prepend="AND">
+					PSM.MEDIA_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="" prepend="AND">
+						(PSM.MEDIA_NM like '%$search_value$%'
+							or PSM.MEDIA_NM like '%$search_value$%')
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="platform_type" prepend="AND">
+					PSM.MEDIA_OS_CD like '%$platform_type$%'
+			</isNotEmpty>
+			<isNotEmpty property="status_type" prepend="AND">
+					PSM.MEDIA_STATUS_CD like '%$status_type$%'
+			</isNotEmpty>
+			<isNotEmpty property="category_cd" prepend="AND">
+					PRM.MEDIA_CATEGORY_CD like '%$category_cd$%'
+			</isNotEmpty>
+		</dynamic> 
+	</select>
+	
+	<select id="selectMediaDetail" parameterClass="array" resultMap="reportListResult">
+		SELECT 
+			PSM.MEDIA_NM, 
+			PSM.MEDIA_ID,
+			PSM.MEDIA_KEY,
+			DATE_FORMAT(PSM.CREATE_DT, '%Y.%m.%d') as CREATE_DT
+		FROM PUSHAD.PS_SVC_MEDIA PSM
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="media_id" prepend="AND">
+				PSM.MEDIA_ID = '$media_id$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="selectCampaignList" parameterClass="array" resultMap="reportListResult">
+		SELECT 
+			PSC.CAMPAIGN_SQ, 
+			PSC.CAMPAIGN_NM, 
+			PSA.AD_NM,
+			PSA.AD_SQ,
+			PSM.MEDIA_ID,
+			<isEqual property="report_type" compareValue="summery">
+				DATE_FORMAT(PRM.REPORT_DT, '%Y-%m-%d') AS DIVISION_DT,
+			</isEqual>
+			<isEqual property="report_type" compareValue="month">
+				DATE_FORMAT(PRM.REPORT_DT, '%Y-%m') AS DIVISION_DT, 
+			</isEqual>
+			<isEqual property="report_type" compareValue="daily">
+				DATE_FORMAT(PRM.REPORT_DT, '%Y-%m-%d') AS DIVISION_DT, 
+			</isEqual> 
+			sum(PRM.REQUEST_CNT) REQUEST_CNT,
+			sum(PRM.SUCCESS_CNT) SUCCESS_CNT,
+			sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) TOT_CLICK,
+			round(sum(PRM.SUCCESS_CNT) / sum(PRM.REQUEST_CNT) * 100,1) SUCCESS_PER,
+			round(sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) / sum(PRM.SUCCESS_CNT) * 100,1) CTR_CNT
+		FROM PUSHAD.PS_SVC_CAMPAIGN PSC
+		JOIN 	PUSHAD.PS_RPT_MEDIA 			PRM 		ON PSC.CAMPAIGN_SQ = PRM.CAMPAIGN_SQ
+		JOIN 	PUSHAD.PS_SVC_AD 				PSA 		ON PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+		JOIN 	PUSHAD.PS_SVC_MEDIA 			PSM 		ON PSM.MEDIA_ID = PRM.MEDIA_ID
+		WHERE 
+			PRM.AD_SQ = PSA.AD_SQ
+			<isNotEmpty property="media_id" prepend="AND">
+				PSM.MEDIA_ID = '$media_id$'
+			</isNotEmpty>
+			<isNotEmpty property="searchStartDate" prepend="AND">
+				PRM.REPORT_DT >= '$searchStartDate$ 00:00:00'
+			</isNotEmpty>
+			<isNotEmpty property="searchEndDate" prepend="AND">
+		    	 '$searchEndDate$ 23:59:59' >= PRM.REPORT_DT
+			</isNotEmpty>
+		<isEqual property="report_type" compareValue="campaign">
+			GROUP BY PSA.AD_SQ 
+		</isEqual>
+		<isEqual property="report_type" compareValue="month">
+			GROUP BY DIVISION_DT 
+		</isEqual>
+		<isEqual property="report_type" compareValue="daily">
+			GROUP BY DIVISION_DT 
+		</isEqual>
+	</select>
+	
+	<select id="selectTotalCampaign" parameterClass="array" resultMap="reportListResult">
+		SELECT 
+			sum(PRM.REQUEST_CNT) as TOT_REQUEST_CNT,
+			sum(PRM.SUCCESS_CNT) as TOT_SUCCESS_CNT,
+			sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) as TOT_CLICK,
+			concat(round((sum(PRM.SUCCESS_CNT)) / (sum(PRM.REQUEST_CNT)) * 100,1)) as SUCCESS_PER,
+			round(sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) / sum(PRM.SUCCESS_CNT) * 100,1) as CTR_CNT
+		FROM PUSHAD.PS_SVC_CAMPAIGN PSC
+		JOIN 	PUSHAD.PS_RPT_MEDIA 			PRM 		ON PSC.CAMPAIGN_SQ = PRM.CAMPAIGN_SQ
+		JOIN 	PUSHAD.PS_SVC_AD 				PSA 		ON PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+		JOIN 	PUSHAD.PS_SVC_MEDIA 			PSM 		ON PSM.MEDIA_ID = PRM.MEDIA_ID
+		WHERE 
+			PRM.AD_SQ = PSA.AD_SQ
+			<isNotEmpty property="media_id" prepend="AND">
+				PRM.MEDIA_ID = '$media_id$'
+			</isNotEmpty>
+			<isNotEmpty property="searchStartDate" prepend="AND">
+				PRM.REPORT_DT >= '$searchStartDate$ 00:00:00'
+			</isNotEmpty>
+			<isNotEmpty property="searchEndDate" prepend="AND">
+		    	 '$searchEndDate$ 23:59:59' >= PRM.REPORT_DT
+			</isNotEmpty>
+	</select>
+	
+	<select id="countCampaignList" parameterClass="array" resultMap="">
+		SELECT count(1) as TOTAL_COUNT
+		FROM PUSHAD.PS_SVC_CAMPAIGN PSC
+		JOIN 	PUSHAD.PS_RPT_MEDIA 			PRM 		ON PSC.CAMPAIGN_SQ = PRM.CAMPAIGN_SQ
+		JOIN 	PUSHAD.PS_SVC_AD 				PSA 		ON PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+		WHERE 
+			PRM.AD_SQ = PSA.AD_SQ
+		AND PRM.MEDIA_ID = '$media_id$'
+	</select>
+	
+	<select id="selectMediaStatusName" parameterClass="" resultMap="">
+		SELECT NAME
+		FROM TAD3.POC_CODE
+		WHERE ATT = #ad_status_cd#
+	</select>
+	
+	<select id="selectMediaPlatformName" parameterClass="" resultMap="">
+		SELECT NAME
+		FROM TAD3.POC_CODE
+		WHERE ATT = #platform_cd#
+	</select>
+	
+	<select id="selectMediaNameList" parameterClass="" resultMap="">
+		SELECT 
+			PSM.MEDIA_NM
+		FROM 
+			PUSHAD.PS_SVC_MEDIA PSM
+		JOIN 			PUSHAD.PS_RPT_MEDIA 		PRM 		ON PSM.MEDIA_ID = PRM.MEDIA_ID
+		LEFT JOIN 		TAD3.POC_CODE 				STATUS 		ON PSM.MEDIA_STATUS_CD = STATUS.ATT
+		LEFT JOIN 		TAD3.POC_CODE 				CATEGORY 	ON PRM.MEDIA_CATEGORY_CD = CATEGORY.ATT
+	</select>
+	
+</sqlMap>

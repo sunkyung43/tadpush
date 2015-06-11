@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="creativeStatistics">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="creativeStatisticsResult" class="statistics_vo" />
+	
+	<!-- Q U E R I E S -->
+	
+	<select id="countSelectList" parameterClass="array">
+		SELECT 
+			COUNT(*) 
+		FROM
+			(SELECT
+				SA.ad_nm,
+				SUM(RD.request_cnt) AS request_cnt,
+				SUM(RD.success_cnt) AS success_cnt,
+				IFNULL(ROUND(SUM(RD.success_cnt) * 100 / SUM(RD.request_cnt), 2), 0) AS success_rate,
+				SUM(RD.web_click_cnt + RD.and_run_click_cnt + RD.ios_run_click_cnt + RD.tst_dl_click_cnt + RD.mar_dl_click_cnt + RD.itu_dl_click_cnt + RD.alt_click_cnt) AS click_cnt,
+				IFNULL(ROUND(SUM(RD.web_click_cnt + RD.and_run_click_cnt + RD.ios_run_click_cnt + RD.tst_dl_click_cnt + RD.mar_dl_click_cnt + RD.itu_dl_click_cnt + RD.alt_click_cnt) * 100 / SUM(RD.success_cnt), 2), 0) AS click_rate 
+			FROM 
+				ps_rpt_device RD, ps_svc_ad SA
+			WHERE 
+				SA.ad_sq = RD.ad_sq
+			<isNotEmpty property="search_start_dt" prepend="AND">
+				start_dt >= #search_start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="search_end_dt" prepend="AND">
+				#search_end_dt# >= start_dt
+			</isNotEmpty>
+			GROUP BY 
+				SA.ad_sq) A
+	</select>
+		
+	<select id="selectList" parameterClass="array" resultMap="creativeStatisticsResult">
+		SELECT
+			case
+				when SA.CREATIVE_TYPE_CD = 'PSCTTP101' then (select ticket_text from ps_svc_creative_text where creative_sq = SA.creative_sq)
+				when SA.CREATIVE_TYPE_CD = 'PSCTTP102' then (select ticket_text from ps_svc_creative_image where creative_sq = SA.creative_sq)
+				when SA.CREATIVE_TYPE_CD = 'PSCTTP103' then (select ticket_text from ps_svc_creative_popup_text_banner where creative_sq = SA.creative_sq)
+				when SA.CREATIVE_TYPE_CD = 'PSCTTP104' then (select ticket_text from ps_svc_creative_popup_text where creative_sq = SA.creative_sq)
+				when SA.CREATIVE_TYPE_CD = 'PSCTTP105' then (select ticket_text from ps_svc_creative_popup_image_banner where creative_sq = SA.creative_sq)
+				when SA.CREATIVE_TYPE_CD = 'PSCTTP106' then (select ticket_text from ps_svc_creative_popup_image where creative_sq = SA.creative_sq)
+				when SA.CREATIVE_TYPE_CD = 'PSCTTP107' then (select ticket_text from ps_svc_creative_jb_default where creative_sq = SA.creative_sq)
+				when SA.CREATIVE_TYPE_CD = 'PSCTTP108' then (select ticket_text from ps_svc_creative_jb_big_text where creative_sq = SA.creative_sq)
+				when SA.CREATIVE_TYPE_CD = 'PSCTTP109' then (select ticket_text from ps_svc_creative_jb_inbox where creative_sq = SA.creative_sq)
+				when SA.CREATIVE_TYPE_CD = 'PSCTTP110' then (select ticket_text from ps_svc_creative_jb_big_picture where creative_sq = SA.creative_sq)
+				else '알수 없음'
+			end as ticket_text,
+			SA.ad_nm,
+			SUM(RD.request_cnt) AS request_cnt,
+			SUM(RD.success_cnt) AS success_cnt,
+			IFNULL(ROUND(SUM(RD.success_cnt) * 100 / SUM(RD.request_cnt), 2), 0) AS success_rate,
+			SUM(RD.web_click_cnt + RD.and_run_click_cnt + RD.ios_run_click_cnt + RD.tst_dl_click_cnt + RD.mar_dl_click_cnt + RD.itu_dl_click_cnt + RD.alt_click_cnt) AS click_cnt,
+			IFNULL(ROUND(SUM(RD.web_click_cnt + RD.and_run_click_cnt + RD.ios_run_click_cnt + RD.tst_dl_click_cnt + RD.mar_dl_click_cnt + RD.itu_dl_click_cnt + RD.alt_click_cnt) * 100 / SUM(RD.success_cnt), 2), 0) AS click_rate 
+		FROM 
+			ps_rpt_device RD, ps_svc_ad SA
+		WHERE 
+			SA.ad_sq = RD.ad_sq
+		<isNotEmpty property="search_start_dt" prepend="AND">
+			start_dt >= #search_start_dt#
+		</isNotEmpty>
+		<isNotEmpty property="search_end_dt" prepend="AND">
+			#search_end_dt# >= start_dt
+		</isNotEmpty>
+		GROUP BY 
+			SA.ad_sq
+		ORDER BY 
+			click_cnt
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+</sqlMap>

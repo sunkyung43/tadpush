@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pushHistory">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="pushHistoryListResult" class="push_history_vo" />
+	
+	<!-- Q U E R I E S -->
+
+	<select id="selectPushHistoryList" parameterClass="array" resultMap="pushHistoryListResult">
+		select 
+		    RH.MDN,
+		    RH.DEVICE_ID,
+		    date_format(SA.START_DT, '%Y.%m.%d/%h:%i') AS START_DT,
+		    SC.CAMPAIGN_NM,
+		    SA.AD_NM,
+		    SM.MEDIA_NM,
+		    if(RH.SUCCESS_YN = 'Y', '성공', '실패') as SUCCESS_YN
+		from
+		    PS_RPT_HISTORY RH
+		        join
+		    PS_SVC_CAMPAIGN SC on RH.CAMPAIGN_SQ = SC.CAMPAIGN_SQ
+		        join
+		    PS_SVC_AD SA on RH.AD_SQ = SA.AD_SQ
+		        join
+		    PS_SVC_MEDIA SM on RH.MEDIA_ID = SM.MEDIA_ID
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="mdn" prepend="AND">
+			    RH.MDN = #mdn#
+			</isNotEmpty>
+		</dynamic>
+		order by SA.START_DT desc
+		<isNotEmpty property="per_page">
+			limit $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+
+	<select id="countPushHistoryList" parameterClass="array" resultMap="">
+		select
+			count(*)
+		from
+		    PS_RPT_HISTORY RH
+		        join
+		    PS_SVC_CAMPAIGN SC on RH.CAMPAIGN_SQ = SC.CAMPAIGN_SQ
+		        join
+		    PS_SVC_AD SA on RH.AD_SQ = SA.AD_SQ
+		        join
+		    PS_SVC_MEDIA SM on RH.MEDIA_ID = SM.MEDIA_ID
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="mdn" prepend="AND">
+			    RH.MDN = #mdn#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+</sqlMap>

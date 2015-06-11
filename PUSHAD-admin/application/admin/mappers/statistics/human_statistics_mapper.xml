@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="humanStatistics">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="humanStatisticsResult" class="statistics_vo" />
+	
+	<!-- Q U E R I E S -->
+	<select id="selectGenderList" parameterClass="array" resultMap="humanStatisticsResult">
+		SELECT 
+		    B.name AS division_nm,
+		    B.value1 as gender_cd,
+		    IFNULL(A.request_cnt, 0) AS request_cnt,
+		    IFNULL(A.success_cnt, 0) AS success_cnt,
+		    IFNULL(A.click_cnt, 0) AS click_cnt,
+		    IFNULL(A.success_rate, 0) AS success_rate,
+		    IFNULL(A.click_rate, 0) AS click_rate
+		FROM
+		    (SELECT 
+		        gender_cd,
+		            SUM(request_cnt) AS request_cnt,
+		            SUM(success_cnt) AS success_cnt,
+		            SUM(click_cnt) AS click_cnt,
+		            ROUND(SUM(success_cnt) / SUM(request_cnt) * 100) AS success_rate,
+		            (SUM(click_cnt) / SUM(success_cnt) * 100) AS click_rate
+		    FROM
+		        ps_rpt_gender
+		    <dynamic prepend="WHERE">
+				<isNotEmpty property="search_start_dt" prepend="AND">
+					report_dt >= #search_start_dt#
+				</isNotEmpty>
+				<isNotEmpty property="search_end_dt" prepend="AND">
+					#search_end_dt# >= report_dt
+				</isNotEmpty>
+			</dynamic>		
+		    GROUP BY gender_cd) A
+		        RIGHT JOIN
+		    (SELECT 
+		        value1, name
+		    FROM
+		        tad3.poc_code
+		    WHERE
+		        ent = #search_type#) B ON B.value1 = A.gender_cd
+		ORDER BY gender_cd DESC
+	</select>
+	<select id="selectAgeList" parameterClass="array" resultMap="humanStatisticsResult">
+		SELECT 
+		    B.name AS division_nm,
+		    IFNULL(A.request_cnt, 0) AS request_cnt,
+		    IFNULL(A.success_cnt, 0) AS success_cnt,
+			IFNULL(A.click_cnt, 0) AS click_cnt,
+			IFNULL(A.success_rate, 0) AS success_rate,
+			IFNULL(A.click_rate, 0) AS click_rate
+		FROM
+		    (SELECT 
+		        age_rng_cd,
+		            SUM(request_cnt) AS request_cnt,
+		            SUM(success_cnt) AS success_cnt,
+		            SUM(click_cnt) AS click_cnt,
+		            ROUND(SUM(success_cnt) / SUM(request_cnt) * 100) AS success_rate,
+		            (SUM(click_cnt) / SUM(success_cnt) * 100) AS click_rate
+		    FROM
+		        ps_rpt_gender
+		  	<dynamic prepend="WHERE">
+		  		<isNotEmpty property="search_value" prepend="AND">
+		  			gender_cd = #search_value#
+		  		</isNotEmpty>
+				<isNotEmpty property="search_start_dt" prepend="AND">
+					report_dt >= #search_start_dt#
+				</isNotEmpty>
+				<isNotEmpty property="search_end_dt" prepend="AND">
+					#search_end_dt# >= report_dt
+				</isNotEmpty>
+			</dynamic>		
+		    GROUP BY age_rng_cd) A
+		        RIGHT JOIN
+		    (SELECT 
+		        value2, name
+		    FROM
+		        tad3.poc_code
+		    WHERE
+		        ent = 'AGE') B ON B.value2 = A.age_rng_cd
+		GROUP BY B.name
+	</select>
+</sqlMap>

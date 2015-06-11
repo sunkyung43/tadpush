@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="period">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="statisticsListResult" class="statistics_vo" />
+	
+	<!-- Q U E R I E S -->
+	<select id="selectYearList" parameterClass="" resultMap="statisticsListResult">
+		SELECT 
+			DATE_FORMAT(prc.report_dt, '%Y') AS division_dt, 
+			SUM(prc.request_cnt) AS request_cnt,  
+			SUM((prc.web_click_cnt + prc.and_run_click_cnt + prc.ios_run_click_cnt + prc.ios_run_click_cnt + prc.tst_dl_click_cnt + prc.mar_dl_click_cnt + prc.itu_dl_click_cnt + prc.alt_click_cnt)) AS click_cnt , 
+			SUM(prc.success_cnt) AS success_cnt,
+			ROUND(SUM(prc.success_cnt)/SUM(prc.request_cnt)*100,2) AS success_rate,
+			ROUND(SUM((prc.web_click_cnt + prc.and_run_click_cnt + prc.ios_run_click_cnt + prc.ios_run_click_cnt + prc.tst_dl_click_cnt + prc.mar_dl_click_cnt + prc.itu_dl_click_cnt + prc.alt_click_cnt)) / SUM(prc.success_cnt)*100,2) AS click_rate
+		FROM ps_svc_ad psa, ps_rpt_carrier prc 
+		WHERE psa.ad_sq = prc.ad_sq
+		GROUP BY division_dt
+		ORDER BY division_dt DESC;
+	</select>
+	
+	<select id="selectDetailList" parameterClass="array" resultMap="statisticsListResult">
+		SELECT 
+			A.division_dt, 
+			IFNULL(B.request_cnt,0) AS request_cnt,
+			IFNULL(B.success_cnt,0) AS success_cnt,
+			IFNULL(B.success_rate,0) AS success_rate,
+			IFNULL(B.click_cnt,0) AS click_cnt,
+			IFNULL(B.click_rate,0) AS click_rate
+		FROM 
+			(SELECT 
+			<isEqual property="search_type" compareValue="month">
+				DATE_FORMAT(report_dt, '%Y-%m') AS report_dt,
+				DATE_FORMAT(report_dt, '%Y.%m') AS division_dt  
+			</isEqual>
+			<isEqual property="search_type" compareValue="day">
+					DATE_FORMAT(report_dt, '%Y-%m-%d') AS report_dt,
+					DATE_FORMAT(report_dt, '%Y.%m.%d') AS division_dt  
+			</isEqual> 
+			FROM tmp_calendar 
+			GROUP BY division_dt) A 
+		LEFT JOIN
+			(SELECT 
+				<isEqual property="search_type" compareValue="month">
+					DATE_FORMAT(prc.report_dt, '%Y-%m') AS report_dt, 
+					DATE_FORMAT(prc.report_dt, '%Y.%m') AS division_dt, 
+				</isEqual>
+				<isEqual property="search_type" compareValue="day">
+					DATE_FORMAT(prc.report_dt, '%Y-%m-%d') AS report_dt, 
+					DATE_FORMAT(prc.report_dt, '%Y.%m.%d') AS division_dt, 
+				</isEqual>  
+				SUM(prc.request_cnt) AS request_cnt,  
+				SUM((prc.web_click_cnt + prc.and_run_click_cnt + prc.ios_run_click_cnt + prc.ios_run_click_cnt + prc.tst_dl_click_cnt + prc.mar_dl_click_cnt + prc.itu_dl_click_cnt + prc.alt_click_cnt)) AS click_cnt , 
+				SUM(prc.success_cnt) AS success_cnt,
+				ROUND(SUM(prc.success_cnt)/SUM(prc.request_cnt)*100,2) AS success_rate,
+				ROUND(SUM((prc.web_click_cnt + prc.and_run_click_cnt + prc.ios_run_click_cnt + prc.ios_run_click_cnt + prc.tst_dl_click_cnt + prc.mar_dl_click_cnt + prc.itu_dl_click_cnt + prc.alt_click_cnt)) / SUM(prc.success_cnt)*100,2) AS click_rate
+			FROM ps_svc_ad psa, ps_rpt_carrier prc 
+			WHERE psa.ad_sq = prc.ad_sq
+			GROUP BY division_dt) B 
+		ON A.report_dt = B.report_dt
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="start_dt" prepend="AND">
+				A.report_dt >= #start_dt#
+			</isNotEmpty>
+			<isNotEmpty property="end_dt" prepend="AND">
+				#end_dt# >= A.report_dt
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY division_dt DESC
+	</select>
+</sqlMap>

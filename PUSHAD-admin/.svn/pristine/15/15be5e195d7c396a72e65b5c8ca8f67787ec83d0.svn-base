@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="campaign">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="campaignResult" class="campaign_vo" />
+	
+	<resultMap id="historyResult" class="history_vo" />
+	
+	<!-- Q U E R I E S -->
+
+	<insert id="insertCampaign" parameterClass="campaign_vo">
+		insert into PS_SVC_CAMPAIGN 
+			(`CAMPAIGN_NM`, 
+			`CAMPAIGN_STATUS_CD`, 
+			`CAMPAIGN_DESC`, 
+			`ADV_COMPANY_SQ`, 
+			`ADV_ACCOUNT_SQ`, 
+			`REPORT_ID`,
+			`REPORT_PASSWORD`,
+			`TOT_PUSH_BOOKING_CNT`, 
+			`CREATE_DT`,
+			`UPDATE_DT`,
+			`CREATE_ACCOUNT_SQ`,
+			`UPDATE_ACCOUNT_SQ`)
+		values
+			(#campaign_nm#,
+			#campaign_status_cd#,
+			#campaign_desc#,
+			#adv_company_sq#,
+			#adv_account_sq#,
+			#report_id#,
+			#report_password#,
+			0,
+			now(),
+			now(),
+			#create_account_sq#,
+			#update_account_sq#)
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+	
+	<update id="updateCampaign" parameterClass="campaign_vo">
+		update PS_SVC_CAMPAIGN
+		set
+			<isNotEmpty property="campaign_nm">
+				CAMPAIGN_NM = #campaign_nm#,
+			</isNotEmpty>
+			<isNotEmpty property="campaign_status_cd">
+				CAMPAIGN_STATUS_CD = #campaign_status_cd#,
+			</isNotEmpty>
+			<isNotEmpty property="adv_company_sq">
+				ADV_COMPANY_SQ = #adv_company_sq#,
+			</isNotEmpty>
+			<isNotEmpty property="adv_account_sq">
+				ADV_ACCOUNT_SQ = #adv_account_sq#,
+			</isNotEmpty>
+			<isNotEmpty property="report_id">
+				REPORT_ID = #report_id#,
+			</isNotEmpty>
+			<isNotEmpty property="report_password">
+				REPORT_PASSWORD = #report_password#,
+			</isNotEmpty>
+			CAMPAIGN_DESC = #campaign_desc#,
+			UPDATE_DT = now(),
+			UPDATE_ACCOUNT_SQ = #update_account_sq#
+		WHERE CAMPAIGN_SQ = #campaign_sq#;
+	</update>
+	
+	<select id="selectCampaignList" parameterClass="array" resultMap="campaignResult">
+		select
+			PSC.CAMPAIGN_SQ,
+			PSC.CAMPAIGN_NM,
+			PSC.ADV_COMPANY_SQ,
+			ADV.COMPANY_NM as ADV_COMPANY_NM,
+			PSC.ADV_ACCOUNT_SQ,
+			BRD.ADV_BRAND_NM as ADV_BRAND_NM,
+			DATE_FORMAT(PSC.START_DT, '%Y-%m-%d') as START_DT,
+			DATE_FORMAT(PSC.END_DT, '%Y-%m-%d') as END_DT,
+			PSC.TOT_PUSH_BOOKING_CNT,
+			PSC.CAMPAIGN_DESC,
+			PSC.REPORT_ID,
+			PSC.REPORT_PASSWORD,
+			DATE_FORMAT(PSC.CREATE_DT, '%Y-%m-%d') as CREATE_DT,
+			DATE_FORMAT(PSC.CREATE_DT, '%Y-%m-%d') as UPDATE_DT,
+			sum(if(PSA.REQUEST_CNT is not null, PSA.REQUEST_CNT, 0)) as TOT_REQUEST_CNT,
+			sum(if(PSA.AD_STATUS_CD = @ad_status_test@, 1, 0)) as TOT_TEST_CNT,
+			sum(if(PSA.AD_STATUS_CD = @ad_status_stand@ or PSA.AD_STATUS_CD = @ad_status_send@, 1, 0)) as TOT_READY_CNT,
+			sum(if(PSA.AD_STATUS_CD = @ad_status_com@, 1, 0)) as TOT_COMPLETE_CNT,
+			concat(DATE_FORMAT(PSC.START_DT, '%Y-%m-%d'), ' ~ ', DATE_FORMAT(PSC.END_DT, '%Y-%m-%d')) as TOT_CAMPAIGN_DT,
+			concat('( ', format(sum(if(PSA.REQUEST_CNT is not null, PSA.REQUEST_CNT, 0)), 0), ' / ', format(PSC.TOT_PUSH_BOOKING_CNT, 0), ' )') as TOT_BOOKING_AND_REQUEST_CNT,
+			count(PSA.AD_SQ) as TOT_AD_CNT
+		from
+			PS_SVC_CAMPAIGN PSC
+		left join
+			PS_SVC_AD PSA on PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+		join
+			TAD3.POC_BIZ_COMPANY ADV on PSC.ADV_COMPANY_SQ = ADV.BIZ_COMPANY_SQ
+		join
+			TAD3.POC_BIZ_USER BRD on PSC.ADV_ACCOUNT_SQ = BRD.ACCOUNT_SQ
+		where
+			PSC.CAMPAIGN_STATUS_CD = @campaign_status_enable@
+			<isNotEmpty property="campaign_sq" prepend="AND">
+				PSC.CAMPAIGN_SQ = #campaign_sq#
+			</isNotEmpty>
+			<isNotEmpty property="not_campaign_sq" prepend="AND">
+				PSC.CAMPAIGN_SQ != #not_campaign_sq#
+			</isNotEmpty>
+			<isNotEmpty property="campaign_nm" prepend="AND">
+				PSC.CAMPAIGN_NM = #campaign_nm#
+			</isNotEmpty>
+			<isNotEmpty property="ad_status_cd">
+				<isEqual property="ad_status_cd" compareValue="PSEADST02" prepend="AND">
+					(PSA.AD_STATUS_CD = @ad_status_stand@ or PSA.AD_STATUS_CD = @ad_status_send@)
+				</isEqual>
+				<isNotEqual property="ad_status_cd" compareValue="PSEADST02" prepend="AND">
+					PSA.AD_STATUS_CD = #ad_status_cd#
+				</isNotEqual>
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="campaign_nm" prepend="AND">
+					PSC.CAMPAIGN_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="adv_company_nm" prepend="AND">
+					ADV.COMPANY_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="adv_brand_nm" prepend="AND">
+					BRD.ADV_BRAND_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="" prepend="AND">
+					(PSC.CAMPAIGN_NM like '%$search_value$%'
+						or ADV.COMPANY_NM like '%$search_value$%'
+						or BRD.ADV_BRAND_NM like '%$search_value$%')
+				</isEqual>
+			</isNotEmpty>			
+		group by
+			PSC.CAMPAIGN_SQ
+		order by
+			PSC.CREATE_DT desc
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+		;
+	</select>
+		
+	<select id="countCampaignList" parameterClass="array" resultMap="">
+		select
+			count(distinct PSC.CAMPAIGN_SQ)
+		from
+			PS_SVC_CAMPAIGN PSC
+		left join
+			PS_SVC_AD PSA on PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+		join
+			TAD3.POC_BIZ_COMPANY ADV on PSC.ADV_COMPANY_SQ = ADV.BIZ_COMPANY_SQ
+		join
+			TAD3.POC_BIZ_USER BRD on PSC.ADV_ACCOUNT_SQ = BRD.ACCOUNT_SQ
+		where
+			PSC.CAMPAIGN_STATUS_CD = @campaign_status_enable@
+			<isNotEmpty property="campaign_sq" prepend="AND">
+				PSC.CAMPAIGN_SQ = #campaign_sq#
+			</isNotEmpty>
+			<isNotEmpty property="not_campaign_sq" prepend="AND">
+				PSC.CAMPAIGN_SQ != #not_campaign_sq#
+			</isNotEmpty>
+			<isNotEmpty property="campaign_nm" prepend="AND">
+				PSC.CAMPAIGN_NM = #campaign_nm#
+			</isNotEmpty>
+			<isNotEmpty property="ad_status_cd">
+				<isEqual property="ad_status_cd" compareValue="PSEADST02" prepend="AND">
+					(PSA.AD_STATUS_CD = @ad_status_stand@ or PSA.AD_STATUS_CD = @ad_status_send@)
+				</isEqual>
+				<isNotEqual property="ad_status_cd" compareValue="PSEADST02" prepend="AND">
+					PSA.AD_STATUS_CD = #ad_status_cd#
+				</isNotEqual>
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="campaign_nm" prepend="AND">
+					PSC.CAMPAIGN_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="adv_company_nm" prepend="AND">
+					ADV.COMPANY_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="adv_brand_nm" prepend="AND">
+					BRD.ADV_BRAND_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="" prepend="AND">
+					(PSC.CAMPAIGN_NM like '%$search_value$%'
+						or ADV.COMPANY_NM like '%$search_value$%'
+						or BRD.ADV_BRAND_NM like '%$search_value$%')
+				</isEqual>
+			</isNotEmpty>			
+		;
+	</select>
+			
+	<delete id="deleteCampaign" parameterClass="">
+		delete from PS_SVC_CAMPAIGN where CAMPAIGN_SQ = #campaign_sq#;
+	</delete>
+
+	<update id="updateCampaignSummary" parameterClass="">
+		update PS_SVC_CAMPAIGN 
+		set 
+			START_DT = (select 
+		            min(START_DT)
+		        from
+		            PS_SVC_AD
+		        where
+		            CAMPAIGN_SQ = #campaign_sq#
+		                and AD_STATUS_CD != @ad_status_test@),
+		    END_DT = (select 
+		            max(START_DT)
+		        from
+		            PS_SVC_AD
+		        where
+		            CAMPAIGN_SQ = #campaign_sq#
+		                and AD_STATUS_CD != @ad_status_test@),
+		    TOT_PUSH_BOOKING_CNT = (select 
+		            sum(PUSH_BOOKING_CNT)
+		        from
+		            PS_SVC_AD
+		        where
+		            CAMPAIGN_SQ = #campaign_sq#
+		                and AD_STATUS_CD != @ad_status_test@)
+		WHERE
+		    CAMPAIGN_SQ = #campaign_sq#
+	</update>
+			
+	<insert id="insertHistory" parameterClass="array">
+		insert into PS_POC_HISTORY_CAMPAIGN 
+			(`CAMPAIGN_SQ`, 
+			`HISTORY_GB`, 
+			`ACCOUNT_SQ`,
+			<isNotEmpty property="ad_sq">
+			`AD_SQ`, 
+			</isNotEmpty>
+			<isNotEmpty property="modify_before">
+			`MODIFY_BEFORE`, 
+			</isNotEmpty>
+			<isNotEmpty property="modify_after">
+			`MODIFY_AFTER`, 
+			</isNotEmpty>
+			`CREATE_DT`)
+		values
+			(#campaign_sq#,
+			#history_gb#,
+			#account_sq#,
+			<isNotEmpty property="ad_sq">
+			#ad_sq#,
+			</isNotEmpty>
+			<isNotEmpty property="modify_before">
+			#modify_before#,
+			</isNotEmpty>
+			<isNotEmpty property="modify_after">
+			#modify_after#,
+			</isNotEmpty>
+			now())
+			<selectKey resultClass="int" keyProperty="">
+  				select LAST_INSERT_ID() AS id;
+			</selectKey>
+	</insert>
+			
+	<delete id="deleteHistory" parameterClass="">
+		delete from PS_POC_HISTORY_CAMPAIGN where CAMPAIGN_HISTORY_SQ = #campaign_history_sq#;
+	</delete>
+	
+	<select id="selectHistoryList" parameterClass="array" resultMap="historyResult">
+		select
+			PHC.CAMPAIGN_HISTORY_SQ,
+			PHC.CAMPAIGN_SQ,
+			PHC.AD_SQ,
+			PHC.HISTORY_GB,
+			PHC.MODIFY_BEFORE,
+			PHC.MODIFY_AFTER,
+			PHC.ACCOUNT_SQ,
+			DATE_FORMAT(PHC.CREATE_DT, '%Y-%m-%d %H:%i:%s') as CREATE_DT,
+			PHC.HISTORY_COMMENT,
+			PSC.CAMPAIGN_NM,
+			PSA.AD_NM,
+			PAU.USER_NM
+		from
+			PS_POC_HISTORY_CAMPAIGN PHC
+		join
+			PS_SVC_CAMPAIGN PSC on PHC.CAMPAIGN_SQ = PSC.CAMPAIGN_SQ
+		left join
+			PS_SVC_AD PSA on PHC.AD_SQ = PSA.AD_SQ
+		join
+			TAD3.POC_ADMIN_USER PAU on PHC.ACCOUNT_SQ = PAU.ACCOUNT_SQ
+		where
+			PHC.CAMPAIGN_SQ = #campaign_sq#
+			<isEqual property="list_type" compareValue="campaign" prepend="AND">
+				PHC.AD_SQ is null
+			</isEqual>
+			<isEqual property="list_type" compareValue="advert" prepend="AND">
+				PHC.AD_SQ is not null
+			</isEqual>
+		order by
+			PHC.CAMPAIGN_HISTORY_SQ desc
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+		;
+	</select>
+		
+	<select id="countHistoryList" parameterClass="array" resultMap="">
+		select
+			count(*)
+		from
+			PS_POC_HISTORY_CAMPAIGN PHC
+		join
+			PS_SVC_CAMPAIGN PSC on PHC.CAMPAIGN_SQ = PSC.CAMPAIGN_SQ
+		left join
+			PS_SVC_AD PSA on PHC.AD_SQ = PSA.AD_SQ
+		join
+			TAD3.POC_ADMIN_USER PAU on PHC.ACCOUNT_SQ = PAU.ACCOUNT_SQ
+		where
+			PHC.CAMPAIGN_SQ = #campaign_sq#
+			<isEqual property="list_type" compareValue="campaign" prepend="AND">
+				PHC.AD_SQ is null
+			</isEqual>
+			<isEqual property="list_type" compareValue="advert" prepend="AND">
+				PHC.AD_SQ is not null
+			</isEqual>
+		order by
+			PHC.CAMPAIGN_HISTORY_SQ desc;
+	</select>
+			
+	<update id="updateHistory" parameterClass="history_vo">
+		update PS_POC_HISTORY_CAMPAIGN
+		set
+			HISTORY_COMMENT = #history_comment#
+		WHERE CAMPAIGN_HISTORY_SQ = #campaign_history_sq#;
+	</update>
+</sqlMap>

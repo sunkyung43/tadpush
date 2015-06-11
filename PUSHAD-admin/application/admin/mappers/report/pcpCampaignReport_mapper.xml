@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pcpCampaignReport">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="reportListResult" class="report_vo" />
+	
+	<resultMap id="codeListResult" class="">
+			<result property="ad_sq" column="AD_SQ" />
+			<result property="ad_nm" column="AD_NM" />
+	</resultMap>
+		
+	<!-- Q U E R I E S -->
+	
+	<select id="selectCampaignReportList" parameterClass="array" resultMap="reportListResult">
+		SELECT
+			PSC.CAMPAIGN_SQ,
+			PSC.CAMPAIGN_NM,
+			DATE_FORMAT(PSC.START_DT, '%Y-%m-%d') as START_DT,
+			DATE_FORMAT(PSC.END_DT, '%Y-%m-%d') as END_DT,
+			case
+				when PSC.TOT_PUSH_BOOKING_CNT is null then '0'
+				else PSC.TOT_PUSH_BOOKING_CNT
+			end as TOT_PUSH_BOOKING_CNT,
+			case
+				when sum(PSA.REQUEST_CNT) is null then '0'
+				else sum(PSA.REQUEST_CNT)
+			end as TOT_REQUEST_CNT,
+			CTTP.NAME as AD_TYPE_NM,
+			PSA.AD_STATUS_CD,
+			PSA.AD_NM,
+			PBC.COMPANY_NM as ADV_COMPANY_NM,
+			PBU.ADV_BRAND_NM as ADV_BRAND_NM
+		FROM
+			PUSHAD.PS_SVC_CAMPAIGN PSC
+			JOIN		PUSHAD.PS_SVC_AD 		PSA		ON	PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+			JOIN 		TAD3.POC_BIZ_COMPANY 	PBC 	ON  PSC.ADV_COMPANY_SQ = PBC.BIZ_COMPANY_SQ
+			JOIN 		TAD3.POC_BIZ_USER 		PBU 	ON  PSC.ADV_ACCOUNT_SQ = PBU.ACCOUNT_SQ
+			JOIN 		TAD3.POC_CODE 			CTTP 	ON 	PSA.AD_STATUS_CD = CTTP.ATT
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchStartDate" prepend="AND">
+				PSA.START_DT >= '$searchStartDate$ 00:00:00'
+			</isNotEmpty>
+			<isNotEmpty property="searchEndDate" prepend="AND">
+		    	 '$searchEndDate$ 23:59:59' >= PSA.START_DT
+			</isNotEmpty>
+			<isNotEmpty property="status_type" prepend="AND">
+					PSA.AD_STATUS_CD like #status_type#
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="campaign_nm" prepend="AND">
+					PSC.CAMPAIGN_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="adv_company_nm" prepend="AND">
+					PBC.COMPANY_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="adv_brand_nm" prepend="AND">
+					PBU.ADV_BRAND_NM like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="" prepend="AND">
+						(PSC.CAMPAIGN_NM like '%$search_value$%'
+							or PBC.COMPANY_NM like '%$search_value$%'
+							or PBU.ADV_BRAND_NM like '%$search_value$%')
+				</isEqual>
+			</isNotEmpty>
+		</dynamic> 
+		GROUP BY PSC.CAMPAIGN_SQ
+		ORDER BY PSC.CREATE_DT DESC
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+	
+	<select id="countCampaignReportList" parameterClass="array" resultMap="">
+		SELECT count(1) as TOTAL_COUNT
+		FROM
+			PUSHAD.PS_SVC_CAMPAIGN PSC
+		JOIN 		(SELECT
+						PSC.CAMPAIGN_SQ,
+						PSC.CAMPAIGN_NM,
+						DATE_FORMAT(PSC.START_DT, '%Y-%m-%d') as START_DT,
+						DATE_FORMAT(PSC.END_DT, '%Y-%m-%d') as END_DT,
+						PSC.TOT_PUSH_BOOKING_CNT,
+						sum(PSA.REQUEST_CNT) as TOT_REQUEST_CNT,
+						CTTP.NAME as AD_TYPE_NM,
+						PSA.AD_STATUS_CD,
+						PBC.COMPANY_NM as ADV_COMPANY_NM,
+						PBU.ADV_BRAND_NM as ADV_BRAND_NM
+					FROM
+						PUSHAD.PS_SVC_CAMPAIGN PSC
+						JOIN		PUSHAD.PS_SVC_AD 		PSA		ON	PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+						JOIN 		TAD3.POC_BIZ_COMPANY 	PBC 	ON  PSC.ADV_COMPANY_SQ = PBC.BIZ_COMPANY_SQ
+						JOIN 		TAD3.POC_BIZ_USER 		PBU 	ON  PSC.ADV_ACCOUNT_SQ = PBU.ACCOUNT_SQ
+						JOIN 		TAD3.POC_CODE 			CTTP 	ON 	PSA.AD_STATUS_CD = CTTP.ATT
+					<dynamic prepend="WHERE">
+						<isNotEmpty property="searchStartDate" prepend="AND">
+							PSA.START_DT >= '$searchStartDate$ 00:00:00'
+						</isNotEmpty>
+						<isNotEmpty property="searchEndDate" prepend="AND">
+					    	 '$searchEndDate$ 23:59:59' >= PSA.START_DT
+						</isNotEmpty>
+						<isNotEmpty property="status_type" prepend="AND">
+								PSA.AD_STATUS_CD like #status_type#
+						</isNotEmpty>
+						<isNotEmpty property="search_value">
+							<isEqual property="search_type" compareValue="campaign_nm" prepend="AND">
+								PSC.CAMPAIGN_NM like '%$search_value$%'
+							</isEqual>
+							<isEqual property="search_type" compareValue="adv_company_nm" prepend="AND">
+								PBC.COMPANY_NM like '%$search_value$%'
+							</isEqual>
+							<isEqual property="search_type" compareValue="adv_brand_nm" prepend="AND">
+								PBU.ADV_BRAND_NM like '%$search_value$%'
+							</isEqual>
+						</isNotEmpty>
+					</dynamic> 
+					GROUP BY PSC.CAMPAIGN_SQ) PSA ON PSA.CAMPAIGN_SQ =  PSC.CAMPAIGN_SQ
+	</select>
+	
+	<select id="selectCampaignDetail" parameterClass="array" resultMap="reportListResult">
+		SELECT
+			PSC.CAMPAIGN_SQ,
+			PSC.CAMPAIGN_NM,
+			PSC.ADV_COMPANY_SQ,
+			PSC.ADV_ACCOUNT_SQ,
+			DATE_FORMAT(PSC.START_DT, '%Y-%m-%d') as START_DT,
+			DATE_FORMAT(PSC.END_DT, '%Y-%m-%d') as END_DT,
+			case
+				when PSC.TOT_PUSH_BOOKING_CNT is null then '0'
+				else PSC.TOT_PUSH_BOOKING_CNT
+			end as TOT_PUSH_BOOKING_CNT,
+			sum(PSA.request_cnt) as REQUEST_CNT,
+			PBC.COMPANY_NM as ADV_COMPANY_NM,
+			PBU.ADV_BRAND_NM as ADV_BRAND_NM
+		FROM
+			PUSHAD.PS_SVC_CAMPAIGN PSC
+			JOIN 		TAD3.POC_BIZ_COMPANY 	PBC 	ON  PSC.ADV_COMPANY_SQ = PBC.BIZ_COMPANY_SQ
+			JOIN 		TAD3.POC_BIZ_USER 		PBU 	ON  PSC.ADV_ACCOUNT_SQ = PBU.ACCOUNT_SQ
+			JOIN 		PUSHAD.PS_SVC_AD 		PSA 	ON  PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="campaign_sq" prepend="AND">
+				PSC.CAMPAIGN_SQ = '$campaign_sq$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="selectAdTotalDetail" parameterClass="array" resultMap="reportListResult">
+		SELECT 
+			case
+				when sum(PRC.REQUEST_CNT) is null then '0'
+				else format(sum(PRC.REQUEST_CNT), 0)
+			end as TOT_REQUEST_CNT,
+			case
+				when sum(PRC.SUCCESS_CNT) is null then '0'
+				else format(sum(PRC.SUCCESS_CNT), 0)
+			end as TOT_SUCCESS_CNT,
+			case
+				when sum(PRC.WEB_CLICK_CNT + PRC.AND_RUN_CLICK_CNT + PRC.IOS_RUN_CLICK_CNT + 
+			PRC.TST_DL_CLICK_CNT + PRC.MAR_DL_CLICK_CNT + PRC.ITU_DL_CLICK_CNT + PRC.ALT_CLICK_CNT) is null then '0'
+				else format(sum(PRC.WEB_CLICK_CNT + PRC.AND_RUN_CLICK_CNT + PRC.IOS_RUN_CLICK_CNT + 
+			PRC.TST_DL_CLICK_CNT + PRC.MAR_DL_CLICK_CNT + PRC.ITU_DL_CLICK_CNT + PRC.ALT_CLICK_CNT), 0)
+			end as TOT_CLICK,
+			case
+				when concat(round(sum(PRC.SUCCESS_CNT) / sum(PRC.REQUEST_CNT) * 100,1)) is null then '0'
+				else concat(round(sum(PRC.SUCCESS_CNT) / sum(PRC.REQUEST_CNT) * 100,1))
+			end as SUCCESS_PER,
+			case
+				when round(sum(PRC.WEB_CLICK_CNT + PRC.AND_RUN_CLICK_CNT + PRC.IOS_RUN_CLICK_CNT + 
+			PRC.TST_DL_CLICK_CNT + PRC.MAR_DL_CLICK_CNT + PRC.ITU_DL_CLICK_CNT + PRC.ALT_CLICK_CNT) / sum(PRC.SUCCESS_CNT) * 100,1) is null then '0'
+				else round(sum(PRC.WEB_CLICK_CNT + PRC.AND_RUN_CLICK_CNT + PRC.IOS_RUN_CLICK_CNT + PRC.TST_DL_CLICK_CNT + PRC.MAR_DL_CLICK_CNT + PRC.ITU_DL_CLICK_CNT + PRC.ALT_CLICK_CNT) / sum(PRC.SUCCESS_CNT) * 100,1)
+			end as CTR_CNT
+		FROM 
+			PUSHAD.PS_SVC_CAMPAIGN PSC
+			JOIN		PUSHAD.PS_RPT_CARRIER PRC	ON	PRC.CAMPAIGN_SQ = PSC.CAMPAIGN_SQ
+			JOIN		PUSHAD.PS_SVC_AD PSA ON PSA.CAMPAIGN_SQ = '$campaign_sq$' and PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+		WHERE 
+			PRC.AD_SQ = PSA.AD_SQ
+			<isNotEmpty property="campaign_sq" prepend="AND">
+				PSC.CAMPAIGN_SQ = '$campaign_sq$'
+			</isNotEmpty>
+			<isNotEmpty property="ad_name" prepend="AND">
+				PSA.AD_NM = '$ad_name$'
+			</isNotEmpty>
+			<isNotEmpty property="searchStartDate" prepend="AND">
+				PSA.START_DT >= '$searchStartDate$ 00:00:00'
+			</isNotEmpty>
+			<isNotEmpty property="searchEndDate" prepend="AND">
+		    	 '$searchEndDate$ 23:59:59' >= PSA.START_DT
+			</isNotEmpty>
+	</select>
+	
+	<select id="selectAdDetail" parameterClass="array" resultMap="reportListResult">
+		SELECT 
+			PSA.AD_SQ,
+			PSA.AD_NM,
+			<isEqual property="report_type" compareValue="summery">
+				DATE_FORMAT(PSA.START_DT, '%Y.%m.%d') AS DIVISION_DT,
+			</isEqual>
+			<isEqual property="report_type" compareValue="month">
+				DATE_FORMAT(PSA.START_DT, '%Y.%m') AS DIVISION_DT, 
+			</isEqual>
+			<isEqual property="report_type" compareValue="daily">
+				DATE_FORMAT(PSA.START_DT, '%Y.%m.%d') AS DIVISION_DT, 
+			</isEqual> 
+			if(isnull(PRC.REQUEST_CNT), 0, sum(PRC.REQUEST_CNT)) as REQUEST_CNT,
+			if(isnull(PRC.SUCCESS_CNT), 0, sum(PRC.SUCCESS_CNT)) as SUCCESS_CNT,
+			if(isnull(PRC.WEB_CLICK_CNT + PRC.AND_RUN_CLICK_CNT + PRC.IOS_RUN_CLICK_CNT + PRC.TST_DL_CLICK_CNT + PRC.MAR_DL_CLICK_CNT + PRC.ITU_DL_CLICK_CNT + PRC.ALT_CLICK_CNT), 0, 
+			sum(PRC.WEB_CLICK_CNT + PRC.AND_RUN_CLICK_CNT + PRC.IOS_RUN_CLICK_CNT + PRC.TST_DL_CLICK_CNT + PRC.MAR_DL_CLICK_CNT + PRC.ITU_DL_CLICK_CNT + PRC.ALT_CLICK_CNT)) as TOT_CLICK,
+			case
+				when concat(round(sum(PRC.SUCCESS_CNT) / sum(PRC.REQUEST_CNT) * 100,1)) is null then '0'
+				else concat(round(sum(PRC.SUCCESS_CNT) / sum(PRC.REQUEST_CNT) * 100,1))
+			end as SUCCESS_PER,
+			case
+				when round(sum(PRC.WEB_CLICK_CNT + PRC.AND_RUN_CLICK_CNT + PRC.IOS_RUN_CLICK_CNT + PRC.TST_DL_CLICK_CNT + PRC.MAR_DL_CLICK_CNT + PRC.ITU_DL_CLICK_CNT + PRC.ALT_CLICK_CNT) / sum(PRC.SUCCESS_CNT) * 100,1) is null then '0'
+				else round(sum(PRC.WEB_CLICK_CNT + PRC.AND_RUN_CLICK_CNT + PRC.IOS_RUN_CLICK_CNT + PRC.TST_DL_CLICK_CNT + PRC.MAR_DL_CLICK_CNT + PRC.ITU_DL_CLICK_CNT + PRC.ALT_CLICK_CNT) / sum(PRC.SUCCESS_CNT) * 100,1)
+			end as CTR_CNT
+		FROM 
+			PUSHAD.PS_SVC_CAMPAIGN PSC
+			JOIN		PUSHAD.PS_RPT_CARRIER PRC	ON	PRC.CAMPAIGN_SQ = PSC.CAMPAIGN_SQ
+			JOIN		PUSHAD.PS_SVC_AD PSA ON PSA.CAMPAIGN_SQ = '$campaign_sq$' and PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+		WHERE 
+			PRC.AD_SQ = PSA.AD_SQ
+			<isNotEmpty property="campaign_sq" prepend="AND">
+				PSC.CAMPAIGN_SQ = '$campaign_sq$'
+			</isNotEmpty>
+			<isNotEmpty property="ad_name" prepend="AND">
+				PSA.AD_NM = '$ad_name$'
+			</isNotEmpty>
+			<isNotEmpty property="searchStartDate" prepend="AND">
+				PSA.START_DT >= '$searchStartDate$ 00:00:00'
+			</isNotEmpty>
+			<isNotEmpty property="searchEndDate" prepend="AND">
+		    	 '$searchEndDate$ 23:59:59' >= PSA.START_DT
+			</isNotEmpty>
+		<isEqual property="report_type" compareValue="summery">
+			GROUP BY PSA.AD_SQ
+		</isEqual>
+		<isEqual property="report_type" compareValue="month">
+			GROUP BY DIVISION_DT 
+		</isEqual>
+		<isEqual property="report_type" compareValue="daily">
+			GROUP BY DIVISION_DT 
+		</isEqual>
+	</select>
+	
+	<select id="selectMediaTotalDetail" parameterClass="array" resultMap="reportListResult">
+		SELECT 
+			case
+				when sum(PRM.REQUEST_CNT) is null then '0'
+				else format(sum(PRM.REQUEST_CNT), 0)
+			end as TOT_REQUEST_CNT,
+			case
+				when sum(PRM.SUCCESS_CNT) is null then '0'
+				else format(sum(PRM.SUCCESS_CNT), 0)
+			end as TOT_SUCCESS_CNT,
+			case
+				when sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + 
+			PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) is null then '0'
+				else format(sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + 
+			PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT), 0)
+			end as TOT_CLICK,
+			case
+				when concat(round((sum(PRM.SUCCESS_CNT)) / (sum(PRM.REQUEST_CNT)) * 100,1)) is null then '0'
+				else concat(round((sum(PRM.SUCCESS_CNT)) / (sum(PRM.REQUEST_CNT)) * 100,1))
+			end as SUCCESS_PER,
+			case
+				when round(sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + 
+			PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) / sum(PRM.SUCCESS_CNT) * 100,1) is null then '0'
+				else round(sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) / sum(PRM.SUCCESS_CNT) * 100,1)
+			end as CTR_CNT
+		FROM 
+			PUSHAD.PS_RPT_MEDIA PRM	
+			JOIN		PUSHAD.PS_SVC_MEDIA PSM	ON	PSM.MEDIA_ID = PRM.MEDIA_ID
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="campaign_sq" prepend="AND">
+				PRM.CAMPAIGN_SQ = '$campaign_sq$'
+			</isNotEmpty>
+			<isNotEmpty property="ad_sq" prepend="AND">
+				PRM.AD_SQ = '$ad_sq$'
+			</isNotEmpty>
+			<isNotEmpty property="searchStartDate" prepend="AND">
+				PRM.REPORT_DT >= '$searchStartDate$ 00:00:00'
+			</isNotEmpty>
+			<isNotEmpty property="searchEndDate" prepend="AND">
+		    	 '$searchEndDate$ 23:59:59' >= PRM.REPORT_DT
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="selectMediaDetail" parameterClass="array" resultMap="reportListResult">
+		SELECT 		
+			PSM.MEDIA_ID,
+			PSM.MEDIA_NM,
+			<isEqual property="report_type" compareValue="summery">
+				DATE_FORMAT(PRM.REPORT_DT, '%Y.%m.%d') as DIVISION_DT,
+			</isEqual>
+			<isEqual property="report_type" compareValue="month">
+				DATE_FORMAT(PRM.REPORT_DT, '%Y.%m') AS DIVISION_DT, 
+			</isEqual>
+			<isEqual property="report_type" compareValue="daily">
+				DATE_FORMAT(PRM.REPORT_DT, '%Y.%m.%d') as DIVISION_DT,
+			</isEqual> 
+			if(isnull(PRM.REQUEST_CNT), 0, sum(PRM.REQUEST_CNT)) as REQUEST_CNT,
+			if(isnull(PRM.SUCCESS_CNT), 0, sum(PRM.SUCCESS_CNT)) as SUCCESS_CNT,
+			if(isnull(sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT)), 0,
+			sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT)) as TOT_CLICK,
+			case
+				when concat(round(sum(PRM.SUCCESS_CNT) / sum(PRM.REQUEST_CNT) * 100,1)) is null then '0'
+				else concat(round(sum(PRM.SUCCESS_CNT) / sum(PRM.REQUEST_CNT) * 100,1))
+			end as SUCCESS_PER,
+			case
+				when concat(round(sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) / sum(PRM.SUCCESS_CNT) * 100,1)) is null then '0'
+				else concat(round(sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) / sum(PRM.SUCCESS_CNT) * 100,1))
+			end as CTR_CNT
+		FROM 
+			PUSHAD.PS_RPT_MEDIA PRM	
+			JOIN		PUSHAD.PS_SVC_MEDIA PSM	ON	PSM.MEDIA_ID = PRM.MEDIA_ID
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="campaign_sq" prepend="AND">
+				PRM.CAMPAIGN_SQ = '$campaign_sq$'
+			</isNotEmpty>
+			<isNotEmpty property="ad_sq" prepend="AND">
+				PRM.AD_SQ = '$ad_sq$'
+			</isNotEmpty>
+			<isNotEmpty property="searchStartDate" prepend="AND">
+				PRM.REPORT_DT >= '$searchStartDate$ 00:00:00'
+			</isNotEmpty>
+			<isNotEmpty property="searchEndDate" prepend="AND">
+		    	 '$searchEndDate$ 23:59:59' >= PRM.REPORT_DT
+			</isNotEmpty>
+		</dynamic>
+			GROUP BY PRM.MEDIA_ID
+	</select>
+	
+	<select id="selectadStatusName" parameterClass="" resultMap="">
+		SELECT NAME
+		FROM TAD3.POC_CODE
+		WHERE ATT = #ad_status_cd#;
+	</select>
+	
+	<select id="selectAdNameList" parameterClass="" resultMap="codeListResult">
+		SELECT 
+			PSA.AD_NM, PSA.AD_SQ
+		FROM 
+			PUSHAD.PS_SVC_CAMPAIGN PSC
+			JOIN		PUSHAD.PS_RPT_CARRIER PRC	ON	PRC.CAMPAIGN_SQ = PSC.CAMPAIGN_SQ
+			JOIN		PUSHAD.PS_SVC_AD PSA ON PSA.CAMPAIGN_SQ = '$campaign_sq$' and PSC.CAMPAIGN_SQ = PSA.CAMPAIGN_SQ
+		WHERE 
+			PRC.AD_SQ = PSA.AD_SQ
+		GROUP BY PSA.AD_SQ 
+	</select>
+		
+	<select id="selectIsfList" parameterClass="array" resultMap="reportListResult">
+		select 
+		    PCGENDER.NAME as TARGET_NM,
+		    sum(PRG.REQUEST_CNT) as REQUEST_CNT,
+		    sum(PRG.SUCCESS_CNT) as SUCCESS_CNT,
+		    round(sum(PRG.SUCCESS_CNT) * 100 / sum(PRG.REQUEST_CNT)) as SUCCESS_PER,
+		    sum(PRG.CLICK_CNT) as TOT_CLICK,
+		    ifnull(round(sum(PRG.CLICK_CNT) * 100 / sum(PRG.SUCCESS_CNT),1), 0) as CTR_CNT,
+		    if(isnull(TGGENDER.TARGET_VALUE), 0, 1) as TARGET
+		from
+		    PUSHAD.PS_RPT_GENDER PRG
+		        join
+		    TAD3.POC_CODE PCGENDER ON PCGENDER.ENT = @gender_ent@
+		        and PRG.GENDER_CD = PCGENDER.VALUE1
+		        left join
+		    PUSHAD.PS_SVC_TARGET_INFO TGGENDER ON TGGENDER.AD_SQ = '$ad_sq$'
+		        and TGGENDER.TARGET_ELEMENT_CD = 'GENDER_CD'
+		        and PRG.GENDER_CD = TGGENDER.TARGET_VALUE
+		where
+		    PRG.CAMPAIGN_SQ = '$campaign_sq$'
+		        and PRG.AD_SQ = '$ad_sq$'
+		group by PRG.GENDER_CD 
+		union all select 
+		    PCAGE.NAME as TARGET_NM,
+		    sum(PRG.REQUEST_CNT) as REQUEST_CNT,
+		    sum(PRG.SUCCESS_CNT) as SUCCESS_CNT,
+		    round(sum(PRG.SUCCESS_CNT) * 100 / sum(PRG.REQUEST_CNT)) as SUCCESS_PER,
+		    sum(PRG.CLICK_CNT) as TOT_CLICK,
+		    ifnull(round(sum(PRG.CLICK_CNT) * 100 / sum(PRG.SUCCESS_CNT),1), 0) as CTR_CNT,
+		    if(isnull(TGAGE.TARGET_VALUE), 0, 1) as TARGET
+		from
+		    PUSHAD.PS_RPT_GENDER PRG
+		        join
+		    TAD3.POC_CODE PCAGE ON PCAGE.ENT = 'AGE'
+		        and PRG.AGE_RNG_CD = PCAGE.VALUE2
+		        left join
+		    PUSHAD.PS_SVC_TARGET_INFO TGAGE ON TGAGE.AD_SQ = '$ad_sq$'
+		        and TGAGE.TARGET_ELEMENT_CD = 'AGE_RNG_CD'
+		        and PRG.AGE_RNG_CD = TGAGE.TARGET_VALUE
+		where
+		    PRG.CAMPAIGN_SQ = '$campaign_sq$'
+		        and PRG.AD_SQ = '$ad_sq$'
+		group by PRG.AGE_RNG_CD 
+		union all select 
+		    concat(PCREGION.SIDO_NM, '-', PCREGION.SIGUGUN_NM) as TARGET_NM,
+		    sum(PRR.REQUEST_CNT) as REQUEST_CNT,
+		    sum(PRR.SUCCESS_CNT) as SUCCESS_CNT,
+		    round(sum(PRR.SUCCESS_CNT) * 100 / sum(PRR.REQUEST_CNT)) as SUCCESS_PER,
+		    sum(PRR.CLICK_CNT) as CLICK_CNT,
+		    ifnull(round(sum(PRR.CLICK_CNT) * 100 / sum(PRR.SUCCESS_CNT),1), 0) as CTR_CNT,
+		    if(isnull(TGREGION.TARGET_VALUE), 0, 1) as TARGET
+		from
+		    PUSHAD.PS_RPT_REGION PRR
+		        join
+		    TAD3.POC_REGION_CODE PCREGION ON PCREGION.SIGUGUN_CD != '000'
+		        and PCREGION.DONG_CD = '000'
+		        and PRR.ADDR_CD = concat(PCREGION.SIDO_CD, PCREGION.SIGUGUN_CD)
+		        left join
+		    PUSHAD.PS_SVC_TARGET_INFO TGREGION ON TGREGION.AD_SQ = '$ad_sq$'
+		        and TGREGION.TARGET_ELEMENT_CD = 'ADDR_CD'
+		        and PRR.ADDR_CD = TGREGION.TARGET_VALUE
+		where
+		    PRR.CAMPAIGN_SQ = '$campaign_sq$'
+		        and PRR.AD_SQ = '$ad_sq$'
+		group by PRR.ADDR_CD
+	</select>
+	
+	<select id="selectTargetList" parameterClass="array" resultMap="reportListResult">
+		select 
+		    concat('OS-', left(PRO.OS_VER, 3)) as TARGET_NM,
+		    sum(PRO.REQUEST_CNT) as REQUEST_CNT,
+		    sum(PRO.SUCCESS_CNT) as SUCCESS_CNT,
+		    round(sum(PRO.SUCCESS_CNT) * 100 / sum(PRO.REQUEST_CNT)) as SUCCESS_PER,
+		    sum(PRO.WEB_CLICK_CNT + PRO.AND_RUN_CLICK_CNT + PRO.IOS_RUN_CLICK_CNT + PRO.TST_DL_CLICK_CNT + PRO.MAR_DL_CLICK_CNT + PRO.ITU_DL_CLICK_CNT + PRO.ALT_CLICK_CNT) as TOT_CLICK,
+		    ifnull(round(sum(PRO.WEB_CLICK_CNT + PRO.AND_RUN_CLICK_CNT + PRO.IOS_RUN_CLICK_CNT + PRO.TST_DL_CLICK_CNT + PRO.MAR_DL_CLICK_CNT + PRO.ITU_DL_CLICK_CNT + PRO.ALT_CLICK_CNT) * 100 / sum(PRO.SUCCESS_CNT),1), 0) as CTR_CNT,
+		    if(isnull(PSTI.TARGET_VALUE), 0, 1) as TARGET
+		from
+		    PUSHAD.PS_RPT_OS PRO
+		        left join
+		    PUSHAD.PS_SVC_TARGET_INFO PSTI ON PSTI.AD_SQ = '$ad_sq$'
+		        and PSTI.TARGET_ELEMENT_CD = 'OS_VER'
+		        and left(PRO.OS_VER, 3) = PSTI.TARGET_VALUE
+		where
+		    PRO.CAMPAIGN_SQ = '$campaign_sq$'
+		        and PRO.AD_SQ = '$ad_sq$'
+		group by TARGET_NM
+		union all select 
+		    concat('DEVICE-', upper(PRD.VENDOR)) as TARGET_NM,
+		    sum(PRD.REQUEST_CNT) as REQUEST_CNT,
+		    sum(PRD.SUCCESS_CNT) as SUCCESS_CNT,
+		    round(sum(PRD.SUCCESS_CNT) * 100 / sum(PRD.REQUEST_CNT)) as SUCCESS_PER,
+		    sum(PRD.WEB_CLICK_CNT + PRD.AND_RUN_CLICK_CNT + PRD.IOS_RUN_CLICK_CNT + PRD.TST_DL_CLICK_CNT + PRD.MAR_DL_CLICK_CNT + PRD.ITU_DL_CLICK_CNT + PRD.ALT_CLICK_CNT) as TOT_CLICK,
+		    ifnull(round(sum(PRD.WEB_CLICK_CNT + PRD.AND_RUN_CLICK_CNT + PRD.IOS_RUN_CLICK_CNT + PRD.TST_DL_CLICK_CNT + PRD.MAR_DL_CLICK_CNT + PRD.ITU_DL_CLICK_CNT + PRD.ALT_CLICK_CNT) * 100 / sum(PRD.SUCCESS_CNT),1), 0) as CTR_CNT,
+		    if(isnull(PSTI.TARGET_VALUE), 0, 1) as TARGET
+		from
+		    PUSHAD.PS_RPT_DEVICE PRD
+		        left join
+		    PUSHAD.PS_SVC_TARGET_INFO PSTI ON PSTI.AD_SQ = '$ad_sq$'
+		       and PSTI.TARGET_ELEMENT_CD = 'VENDOR'
+		        and upper(PRD.VENDOR) = PSTI.TARGET_VALUE
+		where
+		    PRD.CAMPAIGN_SQ = '$campaign_sq$'
+		        and PRD.AD_SQ = '$ad_sq$'
+		group by PRD.VENDOR
+		union all select 
+		    concat('미디어-', PSM.MEDIA_NM) as TARGET_NM,
+		    sum(PRM.REQUEST_CNT) as REQUEST_CNT,
+		    sum(PRM.SUCCESS_CNT) as SUCCESS_CNT,
+		    round(sum(PRM.SUCCESS_CNT) * 100 / sum(PRM.REQUEST_CNT)) as SUCCESS_PER,
+		    sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) as TOT_CLICK,
+		    ifnull(round(sum(PRM.WEB_CLICK_CNT + PRM.AND_RUN_CLICK_CNT + PRM.IOS_RUN_CLICK_CNT + PRM.TST_DL_CLICK_CNT + PRM.MAR_DL_CLICK_CNT + PRM.ITU_DL_CLICK_CNT + PRM.ALT_CLICK_CNT) * 100 / sum(PRM.SUCCESS_CNT),1), 0) as CTR_CNT,
+		    if(isnull(PSTI.TARGET_VALUE), 0, 1) as TARGET
+		from
+		    PUSHAD.PS_RPT_MEDIA PRM
+		        join
+		    PUSHAD.PS_SVC_MEDIA PSM on PRM.MEDIA_ID = PSM.MEDIA_ID
+		        left join
+		    PUSHAD.PS_SVC_TARGET_INFO PSTI on PSTI.AD_SQ = '$ad_sq$'
+		        and PSTI.TARGET_ELEMENT_CD = 'MEDIA_ID'
+		                     and PSM.MEDIA_ID = PSTI.TARGET_VALUE
+		where
+		    PRM.CAMPAIGN_SQ = '$campaign_sq$'
+		        and PRM.AD_SQ = '$ad_sq$'
+		group by PRM.MEDIA_ID
+		union all select 
+		           case
+		                     when PRC.CARRIER in ($skt_values$) then 'CARRIER-SKT'
+		                     when PRC.CARRIER in ($kt_values$) then 'CARRIER-KT'
+		                     when PRC.CARRIER in ($lgu_values$) then 'CARRIER-LGT'
+		                     else 'CARRIER-ETC'
+		           end as TARGET_NM,
+		    sum(PRC.REQUEST_CNT) as REQUEST_CNT,
+		    sum(PRC.SUCCESS_CNT) as SUCCESS_CNT,
+		    round(sum(PRC.SUCCESS_CNT) * 100 / sum(PRC.REQUEST_CNT)) as SUCCESS_PER,
+		    sum(PRC.WEB_CLICK_CNT + PRC.AND_RUN_CLICK_CNT + PRC.IOS_RUN_CLICK_CNT + PRC.TST_DL_CLICK_CNT + PRC.MAR_DL_CLICK_CNT + PRC.ITU_DL_CLICK_CNT + PRC.ALT_CLICK_CNT) as TOT_CLICK,
+		    ifnull(round(sum(PRC.WEB_CLICK_CNT + PRC.AND_RUN_CLICK_CNT + PRC.IOS_RUN_CLICK_CNT + PRC.TST_DL_CLICK_CNT + PRC.MAR_DL_CLICK_CNT + PRC.ITU_DL_CLICK_CNT + PRC.ALT_CLICK_CNT) * 100 / sum(PRC.SUCCESS_CNT),1), 0) as CTR_CNT,
+		    if(isnull(PSTI.TARGET_VALUE), 0, 1) as TARGET
+		from
+		    PUSHAD.PS_RPT_CARRIER PRC
+		                     left join
+		    PUSHAD.PS_SVC_TARGET_INFO PSTI ON PSTI.AD_SQ = '$ad_sq$'
+		        and PSTI.TARGET_ELEMENT_CD = 'CARRIER'
+		        and PRC.CARRIER = PSTI.TARGET_VALUE
+		where
+		    PRC.CAMPAIGN_SQ = '$campaign_sq$'
+		        and PRC.AD_SQ = '$ad_sq$'
+		group by TARGET_NM
+	</select>
+</sqlMap>

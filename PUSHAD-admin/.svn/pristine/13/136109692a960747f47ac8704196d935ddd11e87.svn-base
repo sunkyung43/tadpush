@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="media">
+
+	<!-- R E S U L T M A P S -->
+	<resultMap id="mediaResultMap" class="media_vo"></resultMap>
+
+	<resultMap id="searchMediaResult" class="" />
+	
+	<resultMap id="targetMediaResult" class="" />
+
+	<resultMap id="usedMediaGroupResult" class="" />
+	
+	<resultMap id="historyResult" class="" />
+
+	<resultMap id="mediaGroupResult" class="">
+			<result property="key" column="MEDIA_GROUP_ID" />
+			<result property="title" column="MEDIA_GROUP_NM" />
+			<result property="select" column="TARGET_SELECT" />
+	</resultMap>
+	
+	<resultMap id="mediaNameListResult" class="" />
+
+	<!-- Q U E R I E S -->
+	
+	<select id="countMediaList" parameterClass="array" resultMap="">
+	SELECT 
+		COUNT(*)
+	FROM 
+		ps_svc_media PSM
+	WHERE
+		PSM.media_status_cd NOT IN(@media_status_cd_delete@)
+			<isNotEmpty property="media_status_cd" prepend="AND">
+				PSM.media_status_cd = #media_status_cd#
+			</isNotEmpty>
+			<isNotEmpty property="flatform_cd" prepend="AND">
+				PSM.media_os_cd = #flatform_cd#
+			</isNotEmpty>
+			<isNotEmpty property="media_category_cd" prepend="AND">
+				PSM.media_category_cd = #media_category_cd#
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="media_nm" prepend="AND">
+					PSM.media_nm like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="media_key" prepend="AND">
+					PSM.media_key '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="" prepend="AND">
+					(PSM.media_nm like '%$search_value$%'
+						or PSM.media_key like '%$search_value$%')
+				</isEqual>
+			</isNotEmpty>			
+	</select>
+	
+	
+	<select id="selectMediaList" parameterClass="array" resultMap="mediaResultMap">
+	SELECT 
+		PSM.media_id, 
+		DATE_FORMAT(PSM.create_dt, '%y.%m.%d') AS create_dt,
+		PSM.media_nm,
+		PSM.media_key,
+		(SELECT name FROM tad3.poc_code WHERE ent = 'OS' and value1 = PSM.media_os_cd) AS os_nm, 
+		(SELECT name FROM tad3.poc_code WHERE att = PSM.media_category_cd) AS media_category_nm, 
+		(SELECT name FROM tad3.poc_code WHERE att = PSM.media_status_cd) AS media_status_nm, 
+		DATE_FORMAT(PSM.update_dt, '%y.%m.%d') AS update_dt 
+	FROM 
+		ps_svc_media PSM
+	WHERE
+		PSM.media_status_cd NOT IN(@media_status_cd_delete@)
+			<isNotEmpty property="media_status_cd" prepend="AND">
+				PSM.media_status_cd = #media_status_cd#
+			</isNotEmpty>
+			<isNotEmpty property="flatform_cd" prepend="AND">
+				PSM.media_os_cd = #flatform_cd#
+			</isNotEmpty>
+			<isNotEmpty property="media_category_cd" prepend="AND">
+				PSM.media_category_cd = #media_category_cd#
+			</isNotEmpty>
+			<isNotEmpty property="search_value">
+				<isEqual property="search_type" compareValue="media_nm" prepend="AND">
+					PSM.media_nm like '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="media_key" prepend="AND">
+					PSM.media_key '%$search_value$%'
+				</isEqual>
+				<isEqual property="search_type" compareValue="" prepend="AND">
+					(PSM.media_nm like '%$search_value$%'
+						or PSM.media_key like '%$search_value$%')
+				</isEqual>
+			</isNotEmpty>
+			ORDER BY media_id DESC			
+	<isNotEmpty property="per_page">
+		LIMIT $cur_page$, $per_page$
+	</isNotEmpty>
+	
+	</select>
+
+	<select id="selectSearchMedia" parameterClass="array" resultMap="searchMediaResult">
+        select
+        	MEDIA_ID,
+        	MEDIA_NM 
+		from
+			PS_SVC_MEDIA
+		where
+			MEDIA_STATUS_CD = @media_status_cd_enable@
+			<isNotEmpty property="search_media" prepend="AND">
+				(MEDIA_ID like '%$search_media$%' or MEDIA_NM like '%$search_media$%')
+			</isNotEmpty>
+			<isNotEmpty property="media_nm_list" prepend="AND">
+				MEDIA_NM in
+				<iterate property="media_nm_list" open="(" close=")" conjunction=",">
+					#media_nm_list[]#
+				</iterate>
+			</isNotEmpty>
+			<isNotEmpty property="media_id_list" prepend="AND">
+				MEDIA_ID in
+				<iterate property="media_id_list" open="(" close=")" conjunction=",">
+					#media_id_list[]#
+				</iterate>
+			</isNotEmpty>
+	</select>
+
+	<select id="selectTargetMedia" parameterClass="array" resultMap="targetMediaResult">
+		select 
+		    PSM.MEDIA_ID, PSM.MEDIA_NM
+		from
+		    PS_SVC_TARGET_INFO PSTI
+		join
+		    PS_SVC_MEDIA PSM ON PSTI.TARGET_VALUE = PSM.MEDIA_ID
+		where
+		    PSTI.TARGET_ELEMENT_CD = #target_element_cd#
+		        and PSTI.AD_SQ = #ad_sq#
+	</select>
+	
+	<select id="selectMediaGroup" parameterClass="array" resultMap="mediaGroupResult">
+		select DISTINCT
+		    PSMG.MEDIA_GROUP_ID,
+		    PSMG.MEDIA_GROUP_NM,
+		    IF(TARGET.TARGET_VALUE is null,
+		        'false',
+		        'true') as TARGET_SELECT
+		from
+		    PS_SVC_MEDIA_GROUP PSMG
+		        join
+		    PS_SVC_MEDIA_GROUP_MAPPING PSMGM ON PSMG.MEDIA_GROUP_ID = PSMGM.MEDIA_GROUP_ID
+		        left join
+		    (select 
+		        TARGET_VALUE
+		    from
+		        PS_SVC_TARGET_INFO
+		    where
+		        AD_SQ = #ad_sq#
+		            and TARGET_ELEMENT_CD = #target_element_cd#) TARGET ON TARGET.TARGET_VALUE = PSMG.MEDIA_GROUP_ID;
+	</select>
+
+	<select id="selectMediaNameList" parameterClass="" resultMap="mediaNameListResult">
+		select
+			MEDIA_ID,
+			MEDIA_NM
+		from
+			PS_SVC_MEDIA
+		where
+			MEDIA_STATUS_CD = @media_status_cd_enable@
+			and MEDIA_NM in
+		<iterate property="$media_name_list" open="(" close=")" conjunction=",">
+			#$media_name_list[]#
+		</iterate>
+	</select>
+	
+	<select id="selectUsedMediaGroup" parameterClass="array" resultMap="usedMediaGroupResult">
+		SELECT 		
+			GM.media_group_id,
+			MG.media_group_nm,
+			IF(A.media_group_id = GM.media_group_id, 'Y', 'N') as checkYN
+		FROM 
+			ps_svc_media_group_mapping GM
+		JOIN ps_svc_media_group MG ON GM.media_group_id = MG.media_group_id
+		LEFT JOIN (SELECT media_group_id FROM ps_svc_media_group_mapping WHERE media_id = #media_id#) A 
+		ON A.media_group_id = GM.media_group_id
+		WHERE 
+			GM.media_group_id = MG.media_group_id
+		GROUP BY 
+			GM.media_group_id
+	</select>
+	
+	<select id="selectMediaDetailInfo" parameterClass="array" resultMap="mediaResultMap">
+		SELECT 
+			MEDIA.media_id, 
+			MEDIA.media_nm, 
+			MEDIA.media_status_cd, 
+			MEDIA.media_os_cd AS os_cd, 
+			MEDIA.media_category_cd, 
+			MEDIA.media_key, 
+			MEDIA.media_secret, 
+			MEDIA.media_desc, 
+			MEDIA.create_dt, 
+			MEDIA.update_dt,
+			COUNT(PM.media_id) AS hold_param_cnt
+		FROM 
+			ps_svc_media MEDIA
+		LEFT JOIN 
+			ps_svc_param_media PM ON MEDIA.media_id = PM.media_id and PM.PARAM_MEDIA_STATUS_CD = @param_status_enable@
+		WHERE MEDIA.media_id = #media_id#
+		GROUP 
+			BY MEDIA.media_id
+	</select>
+	
+	<insert id="insertMediaInfo" parameterClass="media_vo">
+		INSERT INTO ps_svc_media
+			(MEDIA_ID, MEDIA_NM, MEDIA_STATUS_CD, MEDIA_OS_CD, MEDIA_CATEGORY_CD,
+			MEDIA_KEY, MEDIA_SECRET, AUTH_PARAM, MEDIA_DESC, CREATE_DT, UPDATE_DT, 
+			CREATE_ACCOUNT_SQ, UPDATE_ACCOUNT_SQ)
+		VALUES
+			(#media_id#, #media_nm#, #media_status_cd#, #os_cd#, #media_category_cd#,
+			#media_key#, #media_secret#, #auth_param#, #media_desc#, now(),	now(),
+			#create_account_sq#, #update_account_sq#);
+		<selectKey resultClass="int" keyProperty="">
+			select LAST_INSERT_ID() AS id;
+		</selectKey>
+	</insert>
+	
+	<insert id="insertMediaHistoryInfo" parameterClass="array">
+	INSERT INTO ps_poc_history_media
+		(media_id, account_sq, history_gb, modify_before, modify_after, history_comment, create_dt)
+	VALUES
+		(#media_id#, #account_sq#, #history_gb#, #modify_before#, #modify_after#, "", now())
+	</insert>
+	<update id="updateMediaInfo" parameterClass="media_vo">
+		UPDATE 
+			ps_svc_media
+		SET
+			media_nm = #media_nm#,
+			media_status_cd = #media_status_cd#,
+			media_os_cd = #os_cd#,
+			media_category_cd = #media_category_cd#,
+			media_desc = #media_desc#,
+			update_dt = now(),
+			update_account_sq = #update_account_sq#
+		WHERE
+			media_id = #media_id#
+	</update>
+	<update id="deleteMediaInfo"  parameterClass="array">
+		UPDATE
+			ps_svc_media
+		SET
+			media_status_cd = #media_status_cd#,
+			update_dt = now(),
+			update_account_sq = #update_account_sq#
+		WHERE 
+			media_id = #media_id#
+	</update>
+	
+	<select id="countMediaHistory" parameterClass="array" resultMap="">
+		SELECT 
+			COUNT(*)
+		FROM 
+			ps_poc_history_media HM
+		WHERE 
+			media_id = #media_id#;
+	</select>
+	
+	<select id="selectMediaHistory" parameterClass="array" resultMap="historyResult">
+		SELECT 
+			DATE_FORMAT(create_dt, '%Y/%m/%d %H:%i') AS division_dt,
+		    media_id, 
+		    (SELECT user_id FROM tad3.poc_account WHERE account_sq = HM.account_sq) AS account_id, 
+			history_gb, 
+			IFNULL((SELECT name FROM tad3.poc_code CD WHERE att= modify_before), modify_before) as modify_before, 
+			IFNULL((SELECT name FROM tad3.poc_code CD WHERE att= modify_after), modify_after) as modify_after 
+		FROM 
+			ps_poc_history_media HM
+		WHERE 
+			media_id = #media_id#
+		ORDER BY create_dt DESC
+		<isNotEmpty property="per_page">
+		LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+		
+	</select>
+	
+	<select id="selectMediaGroupTargetValue" parameterClass="" resultMap="">
+		select
+			group_concat(distinct MEDIA_ID separator ',')
+		from
+			PS_SVC_MEDIA_GROUP_MAPPING
+		where
+			MEDIA_GROUP_ID in
+		<iterate property="media_group_cd_list" open="(" close=")" conjunction=",">
+			#media_group_cd_list[]#
+		</iterate>
+	</select>
+	
+	<select id="selectMediaCategoryTargetValue" parameterClass="" resultMap="">
+		select
+			group_concat(MEDIA_ID separator ',')
+		from
+			PS_SVC_MEDIA
+		where
+			MEDIA_CATEGORY_CD in
+		<iterate property="media_category_cd_list" open="(" close=")" conjunction=",">
+			#media_category_cd_list[]#
+		</iterate>
+	</select>
+	
+</sqlMap>

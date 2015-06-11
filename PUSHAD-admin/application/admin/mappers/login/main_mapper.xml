@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+	<sqlMap namespace="main">
+		
+		<!-- R E S U L T   M A P S -->
+		
+		<resultMap id="loginResult" class="">
+			<result property="ACCOUNT_SQ" column="ACCOUNT_SQ" />
+			<result property="USER_ID" column="USER_ID" />
+			<result property="USER_NM" column="USER_NM" />
+			<result property="ROLE_SQ" column="ROLE_SQ" />
+			<result property="ROLE_NM" column="ROLE_NM" />
+		</resultMap>
+
+		<resultMap id="MainUrlResult" class="">
+			<result property="MENU_URL" column="MENU_URL" />
+		</resultMap>
+
+		<resultMap id="menuResult" class="">
+			<result property="MENU_SQ" column="MENU_SQ" />
+			<result property="MENU_NM" column="MENU_NM" />
+			<result property="MENU_URL" column="MENU_URL" />
+			<result property="MENU_PARENT_SQ" column="MENU_PARENT_SQ" />
+		</resultMap>
+		
+		<!--  Q U E R I E S  -->
+
+		<select id="selectLogin" parameterClass="array" resultMap="loginResult">
+			SELECT 
+			    A.ACCOUNT_SQ,
+			    A.USER_ID,
+			    U.USER_NM,
+			    R.ROLE_SQ,
+			    R.ROLE_NM
+			FROM
+			    TAD3.POC_ACCOUNT A
+			    JOIN TAD3.POC_ADMIN_USER U ON A.ACCOUNT_SQ = U.ACCOUNT_SQ
+			    JOIN TAD3.POC_ROLE R ON U.ROLE_SQ = R.ROLE_SQ
+			WHERE
+			    A.USER_ID = #user_id#
+		        AND A.USER_PASSWD = #user_password#
+		        AND A.ACCOUNT_GB = 'ADMIN'
+		        AND A.ACCOUNT_STATUS_CD = 'ACS101'
+		        AND U.USER_STATUS_CD = 'ACS101'
+		        AND R.ROLE_SQ = 200
+			LIMIT 1;
+		</select>
+
+		<select id="selectMainUrl" parameterClass="" resultMap="">
+			SELECT 
+			    M.MENU_URL
+			FROM
+			    TAD3.POC_AUTH A
+			    JOIN TAD3.POC_MENU M ON A.MENU_SQ = M.MENU_SQ
+			WHERE
+			    A.MENU_MAIN_FL = '1'
+			    AND A.ROLE_SQ = #role_sq#
+			LIMIT 1;
+		</select>		
+
+		<update id="updateLastAccessDt" parameterClass="array">
+			UPDATE TAD3.POC_ACCOUNT
+			SET 
+			    LAST_ACCESS_DT = #last_access_dt#
+			WHERE
+			    ACCOUNT_SQ = #account_sq#;
+    	</update>
+
+		<select id="selectMenu" parameterClass="array" resultMap="menuResult">
+			SELECT 
+			    M.MENU_SQ,
+			    M.MENU_NM,
+			    M.MENU_URL,
+			    M.MENU_PARENT_SQ
+			FROM
+			    TAD3.POC_MENU M
+			    JOIN TAD3.POC_AUTH A ON A.MENU_SQ = M.MENU_SQ
+			    JOIN TAD3.POC_ADMIN_USER U ON U.ROLE_SQ = A.ROLE_SQ
+			WHERE
+			    (A.MENU_READ_FL = 1 or A.MENU_WRITE_FL = 1)
+			    AND U.ACCOUNT_SQ = #account_sq#
+			    AND M.MENU_DEPTH = #menu_depth#
+			ORDER BY M.MENU_DEPTH , M.MENU_PARENT_SQ , M.MENU_ORDER
+		</select>
+		
+	</sqlMap>

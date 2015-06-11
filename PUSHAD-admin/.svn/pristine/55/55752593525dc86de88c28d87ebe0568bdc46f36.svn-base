@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="adotPush" default="upload" basedir=".">
+	<taskdef name="ssh" classname="com.sshtools.ant.Ssh" />
+
+	<property name="server.name" value="adotpush" />
+	<!--
+	<property name="server.ip" value="10.1.3.187" />
+	-->
+	<property name="server.ip" value="61.34.4.99" />
+	<property name="server.port" value="22" />
+	<property name="server.userid" value="root" />
+	<property name="server.pw" value="btb123!@#" />
+	<property name="dir.base" value="/svc/${server.name}" />
+	<property name="compression" value="tar.gz" />
+
+	<target name="prepare">
+		<delete file="./patch/${server.name}.${compression}" />
+		
+		<tstamp>
+			<format property="DAY" pattern="yyyyMMdd" />
+			<format property="TIME" pattern="HHmm" />
+		</tstamp>
+
+		<property name="buildDate" value="${DAY}_${TIME}" />
+	</target>
+
+	<target name="compression" depends="prepare">
+		<copy todir="./patch/temp/${server.name}">
+			<fileset dir="../">
+				<include name="application/**" />
+				<include name="system/**" />
+				<exclude name="**/.svn/**" />
+				<exclude name="application/admin/logs/**" />
+				<exclude name="application/admin/web/temp/**" />
+				<exclude name="application/admin/web/creative/**" />
+				<exclude name="application/admin/.htaccess" />
+				<!-- <exclude name="application/admin/controllers/test/**" /> -->
+				<!-- <exclude name="application/admin/errors/**" /> -->
+			</fileset>
+		</copy>
+		
+		<rename src="./patch/temp/${server.name}/application/admin/.htaccess_org" dest="./patch/temp/${server.name}/application/admin/.htaccess" />
+
+		<mkdir dir="./patch/temp/${server.name}/application/admin/logs" />
+
+		<tar destfile="./patch/${server.name}.${compression}" compression="gzip">
+			<tarfileset dir="./patch/temp">
+				<include name="**/**" />
+			</tarfileset>
+		</tar>
+
+		<delete dir="./patch/temp" />
+	</target>
+
+	<target name="upload" depends="compression">
+		<ssh host="${server.ip}" port="${server.port}" username="${server.userid}" password="${server.pw}" version="2">
+			<exec cmd="mkdir -p ${dir.base}/patch" />
+			<exec cmd="mkdir -p ${dir.base}/web" />
+			<!-- <exec cmd="rm -rf ${dir.base}/web/*" /> -->
+
+			<sftp action="put" remotedir="${dir.base}/patch/" verbose="true" depends="yes">
+				<fileset dir="./patch">
+					<include name="${server.name}.${compression}" />
+				</fileset>
+			</sftp>
+
+			<exec cmd="cd ${dir.base}/patch" />
+			<exec cmd="mv ${server.name}.${compression} ${server.name}_${buildDate}.${compression}" />
+			<exec cmd="cp -rf ${server.name}_${buildDate}.${compression} ../web/" />
+			<exec cmd="cd ${dir.base}/web" />
+			<exec cmd="tar -zxvf ${server.name}_${buildDate}.${compression}" />
+			<exec cmd="cp -rf ./${server.name}/application ./" />
+			<exec cmd="cp -rf ./${server.name}/system ./" />
+			<exec cmd="rm -rf ${server.name}" />
+			<exec cmd="rm -rf ${server.name}_${buildDate}.${compression}" />
+			<exec cmd="chmod -R 777 ./application/admin/logs" />
+
+			<exec cmd="mkdir ./application/admin/web/temp" />
+			<exec cmd="chmod -R 777 ./application/admin/web/temp" />
+			<exec cmd="mkdir ./application/admin/web/creative" />
+			<exec cmd="chmod -R 777 ./application/admin/web/creative" />
+
+			<!--<exec cmd="./mdds_start.sh" />-->
+		</ssh>
+	</target>
+
+</project>

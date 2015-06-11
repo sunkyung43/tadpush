@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="agreement">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="agreementResult" class="agreement_vo" />
+	
+	<!-- Q U E R I E S -->
+
+	<select id="selectAgreement" parameterClass="array" resultMap="agreementResult">
+		select 
+			#mdn# as MDN,
+			PSPH.TERMS_BIT,
+			PSPH.DEVICE_ID,
+			PSPH.CARRIER,
+			PSPH.MEDIA_ID,
+			PSPH.PROVISION_VER,
+			DATE_FORMAT(PSPH.LOG_DT, '%Y.%m.%d (%H:%i)') as LOG_DT,
+			PSPH.REVOKE_ACCOUNT_SQ,
+			PSM.MEDIA_NM,
+			PA.USER_ID,
+			PC.ATT as PATH_CD,
+			PC.NAME as PATH_NM,
+			case
+				when PSPH.TERMS_BIT >= 15 then '모두 동의'
+				when 15 > PSPH.TERMS_BIT and PSPH.TERMS_BIT >= 1 then '일부 동의'
+				when PSPH.TERMS_BIT = 0 then '철회'
+				when 0 > PSPH.TERMS_BIT then '미 동의'
+			end as AGREEMENT_NM,
+			case
+				when PSPH.CARRIER in ($skt_values$) then 'SKT'
+				when PSPH.CARRIER in ($kt_values$) then 'KT'
+				when PSPH.CARRIER in ($lgu_values$) then 'LGU+'
+				else 'ETC'
+			end as CARRIER_NM
+		from
+			PS_SVC_PROVISION_HISTORY PSPH
+				join
+			PS_SVC_MEDIA PSM ON PSPH.MEDIA_ID = PSM.MEDIA_ID
+				join
+			TAD3.POC_CODE PC ON PSPH.PATH_CD = PC.ATT
+				left join
+			TAD3.POC_ACCOUNT PA ON PSPH.REVOKE_ACCOUNT_SQ = PA.ACCOUNT_SQ
+		where
+			PSPH.DEVICE_ID = (select DEVICE_ID from PS_SVC_PROVISION_HISTORY where MDN = #mdn# limit 1)
+		order by PSPH.LOG_DT desc
+		limit 1;
+	</select>
+	
+	<select id="selectParamMediaSdkVer" parameterClass="array" resultMap="">
+		select
+			SDK_VER
+		from
+			PS_SVC_PARAM_MEDIA
+		where
+			DEVICE_ID = #device_id#
+			and MEDIA_ID = #media_id#;	
+	</select>
+	
+</sqlMap>

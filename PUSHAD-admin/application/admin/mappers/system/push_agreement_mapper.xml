@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pushAgreement">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="paramListResult" class="" />
+
+	<resultMap id="idleListResult" class="" />
+
+	<resultMap id="cancelListResult" class="" />
+	
+	<!-- Q U E R I E S -->
+
+	<select id="selectParamList" parameterClass="array" resultMap="paramListResult">
+		select
+			case
+				when PSP.CARRIER in ($skt_values$) then 'SKT'
+				when PSP.CARRIER in ($kt_values$) then 'KT'
+				when PSP.CARRIER in ($lgu_values$) then 'LGU+'
+				else 'ETC'
+			end as CARRIER_NM,
+			count(distinct PSP.DEVICE_ID) AS PARAM_CNT
+		from
+			PS_SVC_PARAM PSP
+		join 
+			PS_SVC_PARAM_MEDIA PSPM ON PSP.DEVICE_ID = PSPM.DEVICE_ID
+		join
+		    PS_SVC_MEDIA PSM on PSPM.MEDIA_ID = PSM.MEDIA_ID
+		where
+			PSP.TERMS_BIT between 8 and 15
+	        and PSP.LAST_MEDIA_ID > 0
+	        and PSPM.PARAM_MEDIA_STATUS_CD = @param_status_enable@
+	        and PSM.MEDIA_STATUS_CD = @media_status_cd_enable@
+		group by CARRIER_NM
+		order by CARRIER_NM desc;
+	</select>
+
+	<select id="selectIdleList" parameterClass="array" resultMap="idleListResult">
+		select
+			case
+				when PSP.CARRIER in ($skt_values$) then 'SKT'
+				when PSP.CARRIER in ($kt_values$) then 'KT'
+				when PSP.CARRIER in ($lgu_values$) then 'LGU+'
+				else 'ETC'
+			end as CARRIER_NM,
+		 	count(distinct PSP.DEVICE_ID) AS IDLE_CNT
+		from
+			PS_SVC_PARAM PSP
+		join 
+			PS_SVC_PARAM_MEDIA PSPM ON PSP.DEVICE_ID = PSPM.DEVICE_ID
+		join
+		    PS_SVC_MEDIA PSM on PSPM.MEDIA_ID = PSM.MEDIA_ID
+		where
+			PSPM.PARAM_MEDIA_STATUS_CD = @param_status_disable_ready@
+		group by CARRIER_NM
+		order by CARRIER_NM desc;
+	</select>
+
+	<select id="selectCancelList" parameterClass="array" resultMap="cancelListResult">
+		select
+			case
+				when PSP.CARRIER in ($skt_values$) then 'SKT'
+				when PSP.CARRIER in ($kt_values$) then 'KT'
+				when PSP.CARRIER in ($lgu_values$) then 'LGU+'
+				else 'ETC'
+			end as CARRIER_NM,
+			count(distinct PSP.DEVICE_ID) AS CANCEL_CNT
+		from
+			PS_SVC_CANCEL_HISTORY PSCH
+		join
+			PS_SVC_PARAM PSP ON PSCH.DEVICE_ID = PSP.DEVICE_ID
+		where
+			PSCH.CANCEL_STATUS_CD =  @cancel_status_del@
+		group by CARRIER_NM
+		order by CARRIER_NM desc;
+	</select>
+
+</sqlMap>

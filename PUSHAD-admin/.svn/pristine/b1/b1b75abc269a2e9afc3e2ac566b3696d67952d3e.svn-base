@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMapConfig      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-config-2.dtd">    
+	
+<sqlMapConfig>
+
+	<!-- These settings control SqlMap configuration details, primarily to do with transaction            
+	management.  They are all optional (see the Developer Guide for more).  -->      
+	<settings/>
+	
+	<!-- Identify all SQL Map XML files to be loaded by this SQL map.  Notice the paths            
+	are relative to the classpath.   -->
+	<sqlMap resource="mappers/common_mapper.xml" />
+	<sqlMap resource="mappers/login/main_mapper.xml" /> 
+	<sqlMap resource="mappers/isf/isf_mapper.xml" /> 
+	<sqlMap resource="mappers/campaign/campaign_mapper.xml" /> 
+	<sqlMap resource="mappers/campaign/advert_mapper.xml" />
+	<sqlMap resource="mappers/campaign/creative_mapper.xml" />
+	<sqlMap resource="mappers/campaign/inventory_mapper.xml" />
+	<sqlMap resource="mappers/report/pcpCampaignReport_mapper.xml" /> 
+	<sqlMap resource="mappers/report/pcpMediaReport_mapper.xml" /> 
+	<sqlMap resource="mappers/statistics/period_mapper.xml" />  
+	<sqlMap resource="mappers/statistics/carrier_mapper.xml" /> 
+	<sqlMap resource="mappers/statistics/media_mapper.xml" /> 
+	<sqlMap resource="mappers/statistics/device_statistics_mapper.xml" />
+	<sqlMap resource="mappers/statistics/os_statistics_mapper.xml" />
+	<sqlMap resource="mappers/statistics/creative_statistics_mapper.xml" />
+	<sqlMap resource="mappers/statistics/param_mapper.xml" />
+	<sqlMap resource="mappers/statistics/company_statistics_mapper.xml" />
+	<sqlMap resource="mappers/statistics/human_statistics_mapper.xml" />
+	<sqlMap resource="mappers/statistics/region_statistics_mapper.xml" />
+	<sqlMap resource="mappers/media/media_mapper.xml" /> 
+	<sqlMap resource="mappers/system/provision_mapper.xml" />
+	<sqlMap resource="mappers/system/agreement_mapper.xml" />
+	<sqlMap resource="mappers/system/push_history_mapper.xml" />
+	<sqlMap resource="mappers/system/push_agreement_mapper.xml" />
+	<sqlMap resource="mappers/system/push_setting_mapper.xml" />
+	<sqlMap resource="mappers/system/target_group_mapper.xml" />
+	<sqlMap resource="mappers/system/device_mapper.xml" />
+	<sqlMap resource="mappers/test/test_mapper.xml" />
+</sqlMapConfig>  

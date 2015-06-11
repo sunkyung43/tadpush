@@ -1,0 +1,4 @@
+DirectoryIndex index.php
+RewriteEngine on
+RewriteCond $1 !^(index\.php|web|robots\.txt)
+RewriteRule ^(.*)$ /index.php?/$1 [L]

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="mediaGroup">
+
+	<!-- R E S U L T M A P S -->
+	
+	<resultMap id="mediaGroupResult" class="mediaGroup_vo" />
+	
+	<resultMap id="groupListResult" class="">
+		<result property="media_group_id" column="media_group_id" />
+		<result property="media_group_nm" column="media_group_nm" />
+	</resultMap>
+	
+	<resultMap id="mappingListResult" class="">
+		<result property="media_group_id" column="media_group_id" />
+		<result property="media_group_desc" column="media_group_desc" />
+		<result property="media_group_nm" column="media_group_nm" />
+	</resultMap>
+	
+	<resultMap id="history_result" class=""/>
+	
+	<!-- Q U E R I E S -->
+	<select id="mediaGroupList" parameterClass="array" resultMap="history_result">
+		SELECT A.* 
+		FROM (
+				SELECT 
+					media_id, 
+					GROUP_CONCAT(media_group_id ORDER BY media_group_id) AS media_group_list 
+		FROM 
+			ps_svc_media_group_mapping
+		GROUP BY 
+			media_id) A
+		WHERE 
+			A.media_group_list LIKE "%$media_group_id$%";
+	</select>
+	
+	<select id="afterMediaGroupList" parameterClass="array" resultMap="history_result">
+		SELECT A.* 
+		FROM (
+				SELECT 
+					media_id, 
+					GROUP_CONCAT(media_group_id ORDER BY media_group_id) AS media_group_list 
+		FROM 
+			ps_svc_media_group_mapping
+		WHERE 
+			media_id IN($media_ids$)
+		GROUP BY 
+			media_id) A
+	</select>
+	
+	<select id="mediaGroupInfo" parameterClass="array" resultMap="">
+		SELECT 
+			IFNULL(GROUP_CONCAT(media_group_id ORDER BY media_group_id),"") AS media_group_list 
+		FROM 
+			ps_svc_media_group_mapping 
+		WHERE 
+			media_id = #media_id#
+	</select>
+	
+	<select id="countGroupList" parameterClass="array" resultMap="">
+		SELECT COUNT(*)
+		FROM
+			(SELECT 
+				mg.media_group_id, 
+				mg.media_group_desc, 
+				DATE_FORMAT(mg.create_dt, '%y/%m/%d') AS create_dt, 
+				COUNT(mgm.media_group_id) AS media_cnt  
+			FROM 
+				ps_svc_media_group mg, 
+				ps_svc_media_group_mapping mgm 
+			WHERE 
+				mg.media_group_id = mgm.media_group_id 
+			GROUP BY 
+				media_group_id
+			<isNotEmpty property="per_page">
+				LIMIT $cur_page$, $per_page$
+			</isNotEmpty>)A
+	</select>
+	
+	<select id="selectGroupList" parameterClass="array" resultMap="mediaGroupResult">
+		SELECT 
+			mg.media_group_id, 
+			mg.media_group_desc, 
+			DATE_FORMAT(mg.create_dt, '%y/%m/%d') AS create_dt, 
+			COUNT(mgm.media_group_id) AS media_cnt  
+		FROM 
+			ps_svc_media_group mg, 
+			ps_svc_media_group_mapping mgm 
+		WHERE 
+			mg.media_group_id = mgm.media_group_id 
+		GROUP BY 
+			media_group_id
+		<isNotEmpty property="per_page">
+			LIMIT $cur_page$, $per_page$
+		</isNotEmpty>
+	</select>
+	
+	<select id="selectUnusedGroupList" parameterClass="" resultMap="groupListResult">
+		SELECT 
+			media_group_id, 
+			media_group_nm  
+		FROM 
+			ps_svc_media_group 
+		WHERE 
+			media_group_id NOT IN(	SELECT 
+										media_group_id 
+									FROM 
+										ps_svc_media_group_mapping 
+									GROUP BY media_group_id );
+	</select>
+	<select id="selectMappingInfo" parameterClass="array" resultMap="mediaGroupResult">
+		SELECT 
+			media_group_id, 
+			media_group_nm, 
+			media_group_desc 
+		FROM 
+			ps_svc_media_group
+		WHERE 
+			media_group_id = #media_group_id#
+	</select>
+	<select id="selectMappingDetailInfo" parameterClass="array" resultMap="mediaGroupResult">
+	SELECT 
+		SM.media_nm,
+		MGM.media_id
+	FROM 
+		ps_svc_media_group_mapping MGM, 
+		ps_svc_media SM
+	WHERE 
+		MGM.media_group_id = #media_group_id#
+	AND 
+		MGM.media_id = SM.media_id
+	</select>
+	
+	<update id="updateMediaGroupInfo" parameterClass="array">
+		UPDATE 
+			ps_svc_media_group 
+		SET
+			media_group_desc = #media_group_desc#,
+			update_dt = now(),
+			<isNotEmpty property="createYN">
+			create_dt = now(),
+			</isNotEmpty>
+			update_account_sq = #update_account_sq#
+			WHERE media_group_id = #media_group_id#;
+	</update>
+	<insert id="insertMediaGroupMapping" parameterClass="mediaGroup_vo">
+		INSERT INTO 
+			ps_svc_media_group_mapping
+			(media_group_id, media_id, create_dt, update_dt, create_account_sq, update_account_sq)
+		VALUES (#media_group_id#, #media_id#, now(), now(), #create_account_sq#, #update_account_sq# )
+	</insert>
+	<delete id="deleteMediaGroupMapping" parameterClass="array">
+		DELETE FROM ps_svc_media_group_mapping
+		WHERE media_group_id = #media_group_id#
+	</delete>
+	
+	<delete id="deleteMediaMapping" parameterClass="array">
+		DELETE FROM ps_svc_media_group_mapping
+		WHERE media_id = #media_id#
+	</delete>
+</sqlMap>

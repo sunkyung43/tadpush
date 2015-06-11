@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<!DOCTYPE sqlMap      
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="isf">
+
+	<!-- R E S U L T M A P S -->
+	<resultMap id="paramResult" class="" />
+	
+	<resultMap id="paramMediaResult" class="" />
+
+	<resultMap id="mediaResult" class="" />
+
+	<resultMap id="frequencyResult" class="" />
+	
+	<resultMap id="advertResult" class="" />
+
+	<resultMap id="campaignResult" class="" />
+
+	<resultMap id="targetResult" class="" />
+	
+	<!-- Q U E R I E S -->
+	<select id="selectParam" parameterClass="string" resultMap="paramResult">
+		select
+			DEVICE_ID,
+			MDN,
+			CARRIER,
+			VENDOR,
+			OS_CD,
+			substring(OS_VER, 1, 3) as OS_VER,
+			MODEL_NM,
+			LAST_MEDIA_ID,
+			TERMS_BIT,
+			TERMS_POPUP_STATUS_CD,
+			TERMS_UPDATE_DT,
+			CREATE_DT,
+			UPDATE_DT
+		from
+			PS_SVC_PARAM
+		where
+			DEVICE_ID = #device_id#;
+	</select>
+
+	<select id="selectParamList" parameterClass="string" resultMap="paramResult">
+		select
+			PSP.DEVICE_ID,
+			PSP.MDN,
+			PSP.CARRIER,
+			PSP.VENDOR,
+			PSP.OS_CD,
+			substring(PSP.OS_VER, 1, 3) as OS_VER,
+			PSP.MODEL_NM,
+			PSP.LAST_MEDIA_ID,
+			PSP.TERMS_BIT,
+			PSP.TERMS_POPUP_STATUS_CD,
+			PSP.TERMS_UPDATE_DT,
+			PSP.CREATE_DT,
+			PSP.UPDATE_DT
+		from
+			PS_SVC_PARAM PSP
+		join
+			PS_SVC_MEDIA PSM on PSP.LAST_MEDIA_ID = PSM.MEDIA_ID
+	</select>
+
+	<select id="selectParamMedia" parameterClass="array" resultMap="paramMediaResult">
+		select
+			DEVICE_ID,
+			MEDIA_ID,
+			PP_ID,
+			SDK_VER,
+			SUPPORT_JB_FL,
+			PARAM_MEDIA_STATUS_CD,
+			CREATE_DT,
+			UPDATE_DT
+		from
+			PS_SVC_PARAM_MEDIA
+		where
+			DEVICE_ID = #device_id#
+			and MEDIA_ID = #media_id#;
+	</select>
+	
+	<select id="selectParamMediaList" parameterClass="array" resultMap="paramMediaResult">
+		select
+			PSPM.DEVICE_ID,
+			PSPM.MEDIA_ID,
+			PSPM.PP_ID,
+			PSPM.SDK_VER,
+			SUPPORT_JB_FL,
+			PSPM.PARAM_MEDIA_STATUS_CD,
+			PSPM.CREATE_DT,
+			PSPM.UPDATE_DT
+		from
+			PS_SVC_PARAM_MEDIA PSPM
+		join
+			PS_SVC_MEDIA PSM on PSPM.MEDIA_ID = PSM.MEDIA_ID	
+	</select>
+		
+	<select id="selectMedia" parameterClass="string" resultMap="mediaResult">
+		select
+			MEDIA_ID,
+			MEDIA_NM,
+			MEDIA_STATUS_CD,
+			MEDIA_OS_CD as OS_CD,
+			MEDIA_CATEGORY_CD,
+			MEDIA_DESC,
+			CREATE_DT,
+			UPDATE_DT
+		from
+			PS_SVC_MEDIA
+		where
+			MEDIA_ID = #media_id#;
+	</select>
+		
+	<select id="selectMediaList" parameterClass="string" resultMap="mediaResult">
+		select
+			MEDIA_ID,
+			MEDIA_NM,
+			MEDIA_STATUS_CD,
+			MEDIA_OS_CD as OS_CD,
+			MEDIA_CATEGORY_CD,
+			MEDIA_DESC,
+			CREATE_DT,
+			UPDATE_DT
+		from
+			PS_SVC_MEDIA
+	</select>
+	
+	<select id="selectFrequency" parameterClass="string" resultMap="frequencyResult">
+		select
+			FREQUENCY_SQ,
+			START_DT,
+			CYCLE,
+			FREQUENCY_CNT,
+			CREATE_DT
+		from
+			PS_POC_FREQUENCY
+		where
+			FREQUENCY_SQ = #frequency_sq#;
+	</select>
+	
+	<select id="selectFrequencyList" parameterClass="string" resultMap="frequencyResult">
+		select
+			FREQUENCY_SQ,
+			START_DT,
+			CYCLE,
+			FREQUENCY_CNT,
+			CREATE_DT
+		from
+			PS_POC_FREQUENCY
+	</select>
+	
+	<select id="selectAdvert" parameterClass="string" resultMap="advertResult">
+		select
+			AD_SQ,
+			CAMPAIGN_SQ,
+			CREATIVE_TYPE_CD,
+			ifnull(CREATIVE_SQ, 0) as CREATIVE_SQ,
+			AD_NM,
+			START_DT,
+			PUSH_BOOKING_CNT,
+			CREATE_DT,
+			UPDATE_DT
+		from
+			PS_SVC_AD
+		where
+			AD_SQ = #ad_sq#;
+	</select>
+		
+	<select id="selectAdvertList" parameterClass="string" resultMap="advertResult">
+		select
+			AD_SQ,
+			CAMPAIGN_SQ,
+			CREATIVE_TYPE_CD,
+			ifnull(CREATIVE_SQ, 0) as CREATIVE_SQ,
+			AD_NM,
+			START_DT,
+			PUSH_BOOKING_CNT,
+			CREATE_DT,
+			UPDATE_DT
+		from
+			PS_SVC_AD
+	</select>
+			
+	<select id="selectCampaign" parameterClass="string" resultMap="campaignResult">
+		select
+			CAMPAIGN_SQ,
+			CAMPAIGN_NM,
+			CAMPAIGN_STATUS_CD,
+			ADV_COMPANY_SQ,
+			ADV_ACCOUNT_SQ,
+			CAMPAIGN_DESC,
+			CREATE_DT,
+			UPDATE_DT
+		FROM
+			PS_SVC_CAMPAIGN
+		WHERE
+			CAMPAIGN_SQ = #campaign_sq#;
+	</select>
+			
+	<select id="selectCampaignList" parameterClass="string" resultMap="campaignResult">
+		select
+			CAMPAIGN_SQ,
+			CAMPAIGN_NM,
+			CAMPAIGN_STATUS_CD,
+			ADV_COMPANY_SQ,
+			ADV_ACCOUNT_SQ,
+			CAMPAIGN_DESC,
+			CREATE_DT,
+			UPDATE_DT
+		FROM
+			PS_SVC_CAMPAIGN
+	</select>
+	
+	<update id="setGroupConcatMaxLength" parameterClass="string">
+		SET SESSION group_concat_max_len = $GroupConcatMaxLength$;
+	</update>
+
+	<select id="selectTarget" parameterClass="string" resultMap="targetResult">
+		select 
+			case
+				when TARGET_ELEMENT_CD = 'MEDIA_NAME' or TARGET_ELEMENT_CD = 'MEDIA_GROUP' or TARGET_ELEMENT_CD = 'MEDIA_CATEGORY' then 'MEDIA_ID'
+				when TARGET_ELEMENT_CD = 'CARRIER_CD' then 'CARRIER'
+				else TARGET_ELEMENT_CD
+			end as TARGET_ELEMENT_CD, 
+			case
+				when TARGET_ELEMENT_CD = 'MEDIA_CATEGORY' then group_concat((select group_concat(MEDIA_ID separator ',') from PS_SVC_MEDIA where MEDIA_CATEGORY_CD = TARGET_VALUE) separator ',')
+				when TARGET_ELEMENT_CD = 'MEDIA_GROUP' then group_concat((select group_concat(MEDIA_ID separator ',') from PS_SVC_MEDIA_GROUP_MAPPING where MEDIA_GROUP_ID = TARGET_VALUE) separator ',')
+				when TARGET_ELEMENT_CD = 'CARRIER_CD' then group_concat((select VALUE2 from TAD3.POC_CODE where ATT = TARGET_VALUE) separator ',')
+				else group_concat(TARGET_VALUE separator ',')
+			end as TARGET_VALUE
+		from
+			PS_SVC_TARGET_INFO PSTI
+		where
+			AD_SQ = #ad_sq#
+			and TARGET_ELEMENT_CD != 'MEDIA_ID'
+			and TARGET_ELEMENT_CD != 'CARRIER'
+			and TARGET_ELEMENT_CD != 'ADDR_CD'
+			and TARGET_ELEMENT_CD != 'VENDOR'
+		group by
+			TARGET_ELEMENT_CD;
+	</select>
+</sqlMap>
